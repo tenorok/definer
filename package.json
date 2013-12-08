@@ -1,0 +1,17 @@
+{
+    "author": "Artem Kurbatov",
+    "name": "definer",
+    "version": "0.0.1",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com:tenorok/definer.git"
+    },
+    "engines": {
+        "node": "0.6 | 0.8 | 0.10"
+    },
+    "devDependencies": {
+        "mocha": "~1.15.1",
+        "chai": "~1.8.1"
+    },
+    "private": true
+}
