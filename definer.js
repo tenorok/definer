@@ -34,7 +34,7 @@
 
         /**
          * Получить массив имён параметров тела модуля
-         * @returns {Array}
+         * @returns {String[]}
          */
         getArguments: function() {
             var fnStr = this.body.toString().replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '');
@@ -49,9 +49,30 @@
         getDependencies: function() {
             var dependencies = [];
             this.getArguments().forEach(function(argument) {
-                dependencies.push(Definer.pool[argument].export);
-            });
+                dependencies.push(this.getDependency(argument));
+            }, this);
             return dependencies;
+        },
+
+        /**
+         * Получить выполненное тело зависимости
+         * @param {String} name Имя зависимости
+         * @returns {*}
+         */
+        getDependency: function(name) {
+            var dependency = Definer.pool[name];
+            if(!dependency) {
+                this.throwDependency(name);
+            }
+            return dependency.export;
+        },
+
+        /**
+         * Сообщить об отсутствии подключаемой зависимости
+         * @param {String} name Имя зависимости
+         */
+        throwDependency: function(name) {
+            throw new ReferenceError('module ' + name + ' is not defined');
         },
 
         /**
