@@ -1,12 +1,56 @@
 const fs = require('fs'),
+    path = require('path'),
     vm = require('vm'),
 
     vow = require('vow'),
-    file = require('file');
+    walk = require('walk');
 
 function Maker() {}
 
 Maker.prototype = {
+
+    /**
+     * Рекурсивно получить список всех файлов в директории
+     * @param {String} directory Путь до стартовой директории
+     * @param {String} [postfix] Постфикс искомых файлов
+     * @returns {Promise}
+     */
+    getFileList: function(directory, postfix) {
+        var promise = vow.promise(),
+            walker = walk.walk(directory, { followLinks: false }),
+            filelist = [];
+
+        walker.on('file', function(root, stat, next) {
+
+            var fileName = stat.name;
+            if(this.isValidFilePostfix(fileName, postfix)) {
+                filelist.push(path.join(root, stat.name));
+            }
+
+            next();
+        }.bind(this));
+
+        walker.on('end', function() {
+            promise.fulfill(filelist);
+        });
+
+        return promise;
+    },
+
+    /**
+     * Проверить, соответствует ли постфикс файлу
+     * @param {String} fileName Имя файла
+     * @param {String} postfix Постфикс
+     * @returns {boolean}
+     */
+    isValidFilePostfix: function(fileName, postfix) {
+        if(!postfix) return true;
+
+        var fileParts = fileName.split('.');
+        fileParts.shift();
+
+        return new RegExp(postfix + '$').test(fileParts.join('.'));
+    },
 
     /**
      * Открыть файл
