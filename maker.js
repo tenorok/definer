@@ -1,5 +1,6 @@
 const fs = require('fs'),
     path = require('path'),
+    vm = require('vm'),
     vow = require('vow');
 
 function Maker() {}
@@ -42,6 +43,21 @@ Maker.prototype = {
             '\\)', 'gm');
 
         return reg.test(fileContent);
+    },
+
+    /**
+     * Получить находящиеся в файле модули
+     * @param {String} fileContent Содержимое файла
+     * @returns {Object|null} Объект модулей файла или null при их отсутствии
+     */
+    getFileModules: function(fileContent) {
+        var modules = {};
+        vm.runInNewContext(fileContent, {
+            define: function(name, body) {
+                modules[name] = body;
+            }
+        });
+        return Object.keys(modules).length ? modules : null;
     }
 
 };
