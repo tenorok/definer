@@ -1,5 +1,4 @@
 const fs = require('fs'),
-    path = require('path'),
     vm = require('vm'),
     vow = require('vow');
 
@@ -19,30 +18,6 @@ Maker.prototype = {
             promise.fulfill(data);
         });
         return promise;
-    },
-
-    /**
-     * Является ли файл модулем
-     * @param {String} fileContent Содержимое файла
-     * @returns {boolean}
-     */
-    isModule: function(fileContent) {
-
-        var any = '[\\s\\S]*',
-            quote = '(\'|\\")',
-            reg = new RegExp('define' + any + '\\(' +
-                any +
-                quote + '\\w+' + quote +
-                any + ',' + any +
-                'function' + any + '\\(' + any + '\\)' +
-                any +
-                '\\{' +
-                    any +
-                '\\}' +
-                any +
-            '\\)', 'gm');
-
-        return reg.test(fileContent);
     },
 
     /**
