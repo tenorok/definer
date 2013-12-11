@@ -10,7 +10,7 @@ var fs = require('fs'),
  * @returns {String}
  */
 function modulePath(fileName) {
-    return path.join(__dirname, '/modules/' + fileName + '.js');
+    return path.join(__dirname, '/modules/', fileName + '.js');
 }
 
 /**
@@ -58,19 +58,19 @@ describe('getFileModules', function() {
     });
 
     it('getFileModules c', function(done) {
-        assertFileModules('c', 'equal', ['c'], done);
+        assertFileModules('sub/c', 'equal', ['c'], done);
     });
 
     it('getFileModules d', function(done) {
-        assertFileModules('d', 'equal', ['d'], done);
+        assertFileModules('sub/d', 'equal', ['d'], done);
     });
 
     it('getFileModules ef', function(done) {
-        assertFileModules('ef', 'equal', ['e', 'f'], done);
+        assertFileModules('sub/sub/ef', 'equal', ['e', 'f'], done);
     });
 
     it('getFileModules fake', function(done) {
-        assertFileModules('fake', 'isNull', [], done);
+        assertFileModules('sub/sub/fake', 'isNull', [], done);
     });
 
 });

@@ -1,6 +1,8 @@
 const fs = require('fs'),
     vm = require('vm'),
-    vow = require('vow');
+
+    vow = require('vow'),
+    file = require('file');
 
 function Maker() {}
 
