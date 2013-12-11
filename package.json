@@ -11,7 +11,8 @@
     },
     "dependencies": {
         "vow": "~0.3.11",
-        "walk": "~2.2.1"
+        "walk": "~2.2.1",
+        "underscore": "~1.5.2"
     },
     "devDependencies": {
         "mocha": "~1.15.1",

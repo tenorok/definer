@@ -3,7 +3,8 @@ const fs = require('fs'),
     vm = require('vm'),
 
     vow = require('vow'),
-    walk = require('walk');
+    walk = require('walk'),
+    _ = require('underscore');
 
 function Maker() {}
 
@@ -92,6 +93,30 @@ Maker.prototype = {
         var fnStr = body.toString().replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '');
         var args = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(/([^\s,]+)/g);
         return args || [];
+    },
+
+    /**
+     * Получить все модули для сборки
+     * @param {String} directory Путь до стартовой директории
+     * @returns {Promise}
+     */
+    getModules: function(directory) {
+
+        var promise = vow.promise(),
+            modules = {};
+
+        this.getFileList(directory, 'js').then(function(fileList) {
+            fileList.forEach(function(filePath, index) {
+                this.openFile(filePath).then(function(fileContent) {
+                    modules = _.extend(modules, this.getFileModules(fileContent));
+                    if(index + 1 >= fileList.length) { // Если последний файл
+                        promise.fulfill(modules);
+                    }
+                }.bind(this));
+            }.bind(this));
+        }.bind(this));
+
+        return promise;
     }
 
 };
