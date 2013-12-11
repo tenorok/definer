@@ -75,10 +75,23 @@ Maker.prototype = {
         var modules = {};
         vm.runInNewContext(fileContent, {
             define: function(name, body) {
-                modules[name] = body;
-            }
+                modules[name] = {
+                    dependencies: this.getArguments(body),
+                    body: body
+                };
+            }.bind(this)
         });
         return Object.keys(modules).length ? modules : null;
+    },
+
+    /**
+     * Получить массив имён параметров тела модуля
+     * @returns {String[]}
+     */
+    getArguments: function(body) {
+        var fnStr = body.toString().replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg, '');
+        var args = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(/([^\s,]+)/g);
+        return args || [];
     }
 
 };

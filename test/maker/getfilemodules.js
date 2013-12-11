@@ -1,5 +1,4 @@
-var fs = require('fs'),
-    path = require('path'),
+var path = require('path'),
     assert = require('chai').assert,
 
     Maker = require('../../maker.js');
@@ -17,60 +16,53 @@ function modulePath(fileName) {
  * Проверить корректность получения модулей из файла
  * @param {String} fileName Имя файла модуля
  * @param {String} method Имя метода для тестирования
- * @param {Array} moduleNames Массив имён модулей
+ * @param {Object} modules Массив имён модулей
  * @param {Function} done Функция Mocha
  */
-function assertFileModules(fileName, method, moduleNames, done) {
+function assertFileModules(fileName, method, modules, done) {
     var maker = new Maker();
     maker.openFile(modulePath(fileName)).then(function(fileContent) {
 
-        var standard = getModulesObject(moduleNames).toString(),
-            executed = maker.getFileModules(fileContent),
-            result = executed ? executed.toString() : executed;
+        var fileModules = maker.getFileModules(fileContent),
+            resultModuleNames = fileModules && Object.keys(fileModules);
 
-        assert[method](result, standard);
+        assert[method](resultModuleNames, Object.keys(modules));
+
+        for(var moduleName in fileModules) {
+            var resultDependencies = fileModules[moduleName].dependencies,
+                standardDependencies = modules[moduleName];
+
+            assert.deepEqual(resultDependencies, standardDependencies);
+        }
 
         done();
     }).done();
 }
 
-/**
- * Получить имитационный объект модулей по их именам
- * @param {Array} moduleNames Массив имён модулей
- * @returns {Object}
- */
-function getModulesObject(moduleNames) {
-    var modules = {};
-    moduleNames.forEach(function(name) {
-        modules[name] = function() {};
-    });
-    return modules;
-}
-
 describe('getFileModules', function() {
 
     it('getFileModules a', function(done) {
-        assertFileModules('a', 'equal', ['a'], done);
+        assertFileModules('a', 'deepEqual', {'a': []}, done);
     });
 
     it('getFileModules b', function(done) {
-        assertFileModules('b', 'equal', ['b'], done);
+        assertFileModules('b', 'deepEqual', {'b': ['a']}, done);
     });
 
     it('getFileModules c', function(done) {
-        assertFileModules('sub/c', 'equal', ['c'], done);
+        assertFileModules('sub/c', 'deepEqual', {'c': ['a', 'b']}, done);
     });
 
     it('getFileModules d', function(done) {
-        assertFileModules('sub/d', 'equal', ['d'], done);
+        assertFileModules('sub/d', 'deepEqual', {'d': ['a', 'b', 'c']}, done);
     });
 
     it('getFileModules ef', function(done) {
-        assertFileModules('sub/sub/ef', 'equal', ['e', 'f'], done);
+        assertFileModules('sub/sub/ef', 'deepEqual', {'e': ['d'], 'f': []}, done);
     });
 
     it('getFileModules fake', function(done) {
-        assertFileModules('sub/sub/fake', 'isNull', [], done);
+        assertFileModules('sub/sub/fake', 'isNull', {}, done);
     });
 
 });
