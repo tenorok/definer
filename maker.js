@@ -98,14 +98,15 @@ Maker.prototype = {
     /**
      * Получить все модули для сборки
      * @param {String} directory Путь до стартовой директории
+     * @param {String} [postfix] Постфикс искомых файлов
      * @returns {Promise}
      */
-    getModules: function(directory) {
+    getModuleList: function(directory, postfix) {
 
         var promise = vow.promise(),
             modules = {};
 
-        this.getFileList(directory, 'js').then(function(fileList) {
+        this.getFileList(directory, postfix || 'js').then(function(fileList) {
             fileList.forEach(function(filePath, index) {
                 this.openFile(filePath).then(function(fileContent) {
                     modules = _.extend(modules, this.getFileModules(fileContent));

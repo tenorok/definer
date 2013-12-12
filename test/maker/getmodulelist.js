@@ -2,10 +2,10 @@ var path = require('path'),
     assert = require('chai').assert,
     Maker = require('../../maker.js');
 
-describe('getModules', function() {
+describe('getModuleList', function() {
 
-    it('getModules modules', function(done) {
-        new Maker().getModules(path.join(__dirname, 'modules')).then(function(modules) {
+    it('getModuleList modules', function(done) {
+        new Maker().getModuleList(path.join(__dirname, 'modules')).then(function(modules) {
 
             var standardModules = {
                     'a': [],
