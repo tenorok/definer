@@ -41,20 +41,20 @@ function assertFileModules(fileName, method, modules, done) {
 
 describe('getFileModules', function() {
 
-    it('getFileModules a', function(done) {
-        assertFileModules('a', 'deepEqual', {'a': []}, done);
-    });
-
     it('getFileModules b', function(done) {
         assertFileModules('b', 'deepEqual', {'b': ['a']}, done);
+    });
+
+    it('getFileModules d', function(done) {
+        assertFileModules('d', 'deepEqual', {'d': ['a', 'b', 'c']}, done);
     });
 
     it('getFileModules c', function(done) {
         assertFileModules('sub/c', 'deepEqual', {'c': ['a', 'b']}, done);
     });
 
-    it('getFileModules d', function(done) {
-        assertFileModules('sub/d', 'deepEqual', {'d': ['a', 'b', 'c']}, done);
+    it('getFileModules a', function(done) {
+        assertFileModules('sub/sub/a', 'deepEqual', {'a': []}, done);
     });
 
     it('getFileModules ef', function(done) {

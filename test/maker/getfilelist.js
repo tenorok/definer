@@ -14,10 +14,10 @@ describe('getFileList', function() {
         new Maker().getFileList(path.join(__dirname, 'modules'), 'js').then(function(filelist) {
 
             assert.deepEqual(filelist, getAbsoluteFilePath([
-                'modules/a.js',
                 'modules/b.js',
+                'modules/d.js',
                 'modules/sub/c.js',
-                'modules/sub/d.js',
+                'modules/sub/sub/a.js',
                 'modules/sub/sub/ef.js',
                 'modules/sub/sub/fake.js'
             ]));
