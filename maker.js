@@ -6,7 +6,20 @@ const fs = require('fs'),
     walk = require('walk'),
     _ = require('underscore');
 
-function Maker() {}
+function Maker() {
+
+    /**
+     * Отсортированные по зависимостям модули
+     * @type {Object[]}
+     */
+    this.modules = [];
+
+    /**
+     * Имена добавленных в отсортированный массив модулей
+     * @type {String[]}
+     */
+    this.sortedModuleNames = [];
+}
 
 Maker.prototype = {
 
@@ -118,6 +131,133 @@ Maker.prototype = {
         }.bind(this));
 
         return promise;
+    },
+
+    /**
+     * Получить отсортированные по зависимостям модули
+     * @param {String} directory Путь до стартовой директории
+     * @param {String} [postfix] Постфикс искомых файлов
+     * @returns {Promise}
+     */
+    getModules: function(directory, postfix) {
+
+        var promise = vow.promise();
+
+        this.getModuleList(directory, postfix).then(function(modules) {
+            promise.fulfill(this.sortModules(modules));
+        }.bind(this));
+
+        return promise;
+    },
+
+    /**
+     * Отсортировать полученный список всех модулей для сборки
+     * @param {Object} modules Список всех модулей
+     * @returns {Object[]}
+     */
+    sortModules: function(modules) {
+
+        for(var name in modules) if(modules.hasOwnProperty(name)) {
+
+            var info = modules[name],
+                dependencies = info.dependencies;
+
+            if(!this.isModuleExist(name)) {
+
+                dependencies.forEach(function(dependency) {
+                    this.addModule('push', dependency, modules[dependency]);
+                }.bind(this));
+
+                this.addModule('push', name, info);
+
+            } else {
+
+                dependencies.forEach(function(dependency) {
+                    this.moveBefore(name, dependency, info);
+                }.bind(this));
+
+            }
+        }
+
+        return this.modules;
+    },
+
+    /**
+     * Добавить модуль в отсортированный массив
+     * @param {String} method Метод для работы с массивом
+     * @param {String} name Имя модуля
+     * @param {Object} info Информация о модуле
+     * @param {String[]} info.dependencies Зависимости модуля
+     * @param {Function} info.body Тело модуля
+     */
+    addModule: function(method, name, info) {
+        if(this.isModuleExist(name)) return;
+
+        this.modules[method]({
+            name: name,
+            deps: info.dependencies,
+            body: info.body
+        });
+
+        this.sortedModuleNames.push(name);
+    },
+
+    /**
+     * Добавлен ли уже модуль в отсортированный массив
+     * @param {String} name Имя модуля
+     * @returns {boolean}
+     */
+    isModuleExist: function(name) {
+        return !!~this.sortedModuleNames.indexOf(name);
+    },
+
+    /**
+     * Расположить один модуль перед другим
+     * @param {String} name Имя основного модуля, перед которым будет располагаться модуль-зависимость
+     * @param {String} dependency Имя модуля-зависимости
+     * @param {Object} info Информация о модуле
+     * @param {String[]} info.dependencies Зависимости модуля
+     * @param {Function} info.body Тело модуля
+     * @returns {*}
+     */
+    moveBefore: function(name, dependency, info) {
+
+        // Если модуля-зависимости ещё нет в сортируемом массиве
+        if(!this.isModuleExist(dependency)) {
+            return this.addModule('unshift', dependency, info);
+        }
+
+        var moduleIndex = this.getModuleIndex(name),
+            dependencyIndex = this.getModuleIndex(dependency);
+
+        // Если модуль-зависимость и так расположен перед основным модулем
+        if(dependencyIndex < moduleIndex) return;
+
+        this.moveBeforeIndex(moduleIndex, dependencyIndex);
+    },
+
+    /**
+     * Получить индекс модуля в сортируемом массиве
+     * @param {String} name Имя модуля
+     * @returns {number}
+     */
+    getModuleIndex: function(name) {
+        var moduleIndex;
+        this.modules.every(function(module, index) {
+            moduleIndex = index;
+            return module.name !== name;
+        });
+        return moduleIndex;
+    },
+
+    /**
+     * Подвинуть модуль-зависимость перед основным модулем
+     * @param {number} moduleIndex Индекс основного модуля
+     * @param {number} dependencyIndex Индекс модуля-зависимости
+     */
+    moveBeforeIndex: function(moduleIndex, dependencyIndex) {
+        this.modules.splice(moduleIndex, 0, this.modules[dependencyIndex]); // Скопировать на новое место
+        this.modules.splice(dependencyIndex + 1, 1); // Удалить с прошлого места
     }
 
 };
