@@ -151,6 +151,24 @@ Maker.prototype = {
     },
 
     /**
+     * Получить отсортированные модули для конкретного модуля
+     * @param {String} name Имя целевого модуля
+     * @param {String} directory Путь до стартовой директории
+     * @param {String} [postfix] Постфикс искомых файлов
+     * @returns {Promise}
+     */
+    getModule: function(name, directory, postfix) {
+
+        var promise = vow.promise();
+
+        this.getModules(directory, postfix).then(function(modules) {
+            promise.fulfill(modules.splice(0, this.getModuleIndex(name) + 1));
+        }.bind(this));
+
+        return promise;
+    },
+
+    /**
      * Отсортировать полученный список всех модулей для сборки
      * @param {Object} modules Список всех модулей
      * @returns {Object[]}
