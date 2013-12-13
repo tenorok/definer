@@ -25,9 +25,42 @@ function Maker() {
      * @type {String}
      */
     this.closure = '';
+
+    /**
+     * Опции сборки
+     * @type {{directory: string, module: string|boolean, postfix: string}}
+     */
+    this.options = {
+        directory: '.',
+        module: false,
+        postfix: 'js'
+    };
 }
 
 Maker.prototype = {
+
+    /**
+     * Собрать модули
+     * @param {String} filePath Путь до сохраняемого файла
+     * @param {Object} options Опции сборки
+     * @returns {Promise}
+     */
+    make: function(filePath, options) {
+
+        this.options = _.extend(this.options, options);
+        this.options.save = filePath;
+
+        var promise = vow.promise();
+
+        this.getModules(this.options.directory, this.options.postfix).then(function() {
+            this.convertToClosure();
+            this.saveClosureToFile(this.options.save).then(function() {
+                promise.fulfill();
+            });
+        }.bind(this));
+
+        return promise;
+    },
 
     /**
      * Рекурсивно получить список всех файлов в директории
