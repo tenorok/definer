@@ -169,6 +169,39 @@ Maker.prototype = {
     },
 
     /**
+     * Сформировать строку замыкания из отсортированного списка модулей
+     * @returns {String}
+     */
+    convertToClosure: function() {
+
+        var length = this.modules.length,
+            closure = ['(function(global) {\nvar '];
+
+        this.modules.forEach(function(module, index) {
+            closure.push(module.name);
+            closure.push(' = (');
+            closure.push(module.body);
+            closure.push(').call(global');
+
+            var deps = module.deps.join(', ');
+            deps.length && closure.push(', ');
+            closure.push(deps);
+
+            closure.push(')');
+
+            index + 1 < length
+                ? closure.push(',')
+                : closure.push(';');
+
+            closure.push('\n');
+        });
+
+        closure.push('})(this);');
+
+        return closure.join('');
+    },
+
+    /**
      * Отсортировать полученный список всех модулей для сборки
      * @param {Object} modules Список всех модулей
      * @returns {Object[]}
