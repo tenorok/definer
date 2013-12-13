@@ -19,6 +19,12 @@ function Maker() {
      * @type {String[]}
      */
     this.sortedModuleNames = [];
+
+    /**
+     * Строка замыкания из отсортированного списка модулей
+     * @type {String}
+     */
+    this.closure = '';
 }
 
 Maker.prototype = {
@@ -76,6 +82,20 @@ Maker.prototype = {
         fs.readFile(filePath, { encoding: 'UTF-8' }, function(err, data) {
             if(err) return promise.reject(err);
             promise.fulfill(data);
+        });
+        return promise;
+    },
+
+    /**
+     * Сохранить строку замыкания в файл
+     * @param {String} filePath Путь до сохраняемого файла
+     * @returns {Promise}
+     */
+    saveClosureToFile: function(filePath) {
+        var promise = vow.promise();
+        fs.writeFile(filePath, this.closure, function(err) {
+            if(err) return promise.reject(err);
+            promise.fulfill();
         });
         return promise;
     },
@@ -198,7 +218,7 @@ Maker.prototype = {
 
         closure.push('})(this);');
 
-        return closure.join('');
+        return this.closure = closure.join('');
     },
 
     /**

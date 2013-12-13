@@ -28,7 +28,7 @@ describe('Конвертирование модулей в строку без d
             '})(this);';
 
             assert.deepEqual(
-                maker.convertToClosure(modules),
+                maker.convertToClosure(),
                 closure
             );
 
