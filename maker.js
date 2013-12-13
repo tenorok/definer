@@ -6,7 +6,12 @@ const fs = require('fs'),
     walk = require('walk'),
     _ = require('underscore');
 
-function Maker() {
+/**
+ * Конструктор
+ * @constructor
+ * @param {Object} options Опции сборки
+ */
+function Maker(options) {
 
     /**
      * Отсортированные по зависимостям модули
@@ -27,14 +32,20 @@ function Maker() {
     this.closure = '';
 
     /**
+     * Путь до сохраняемого файла
+     * @type {String}
+     */
+    this.saveFilePath = '';
+
+    /**
      * Опции сборки
      * @type {{directory: string, module: string|boolean, postfix: string}}
      */
-    this.options = {
+    this.options = _.extend({
         directory: '.',
         module: false,
         postfix: 'js'
-    };
+    }, options);
 }
 
 Maker.prototype = {
@@ -42,19 +53,17 @@ Maker.prototype = {
     /**
      * Собрать модули
      * @param {String} filePath Путь до сохраняемого файла
-     * @param {Object} options Опции сборки
      * @returns {Promise}
      */
-    make: function(filePath, options) {
+    make: function(filePath) {
 
-        this.options = _.extend(this.options, options);
-        this.options.save = filePath;
+        this.saveFilePath = filePath;
 
         var promise = vow.promise();
 
-        this.getModules(this.options.directory, this.options.postfix).then(function() {
+        this.getModules().then(function() {
             this.convertToClosure();
-            this.saveClosureToFile(this.options.save).then(function() {
+            this.saveClosureToFile().then(function() {
                 promise.fulfill();
             });
         }.bind(this));
@@ -64,19 +73,17 @@ Maker.prototype = {
 
     /**
      * Рекурсивно получить список всех файлов в директории
-     * @param {String} directory Путь до стартовой директории
-     * @param {String} [postfix] Постфикс искомых файлов
      * @returns {Promise}
      */
-    getFileList: function(directory, postfix) {
+    getFileList: function() {
         var promise = vow.promise(),
-            walker = walk.walk(directory, { followLinks: false }),
+            walker = walk.walk(this.options.directory, { followLinks: false }),
             filelist = [];
 
         walker.on('file', function(root, stat, next) {
 
             var fileName = stat.name;
-            if(this.isValidFilePostfix(fileName, postfix)) {
+            if(this.isValidFilePostfix(fileName)) {
                 filelist.push(path.join(root, stat.name));
             }
 
@@ -93,16 +100,14 @@ Maker.prototype = {
     /**
      * Проверить, соответствует ли постфикс файлу
      * @param {String} fileName Имя файла
-     * @param {String} postfix Постфикс
      * @returns {boolean}
      */
-    isValidFilePostfix: function(fileName, postfix) {
-        if(!postfix) return true;
+    isValidFilePostfix: function(fileName) {
 
         var fileParts = fileName.split('.');
         fileParts.shift();
 
-        return new RegExp(postfix + '$').test(fileParts.join('.'));
+        return new RegExp(this.options.postfix + '$').test(fileParts.join('.'));
     },
 
     /**
@@ -121,12 +126,11 @@ Maker.prototype = {
 
     /**
      * Сохранить строку замыкания в файл
-     * @param {String} filePath Путь до сохраняемого файла
      * @returns {Promise}
      */
-    saveClosureToFile: function(filePath) {
+    saveClosureToFile: function() {
         var promise = vow.promise();
-        fs.writeFile(filePath, this.closure, function(err) {
+        fs.writeFile(this.saveFilePath, this.closure, function(err) {
             if(err) return promise.reject(err);
             promise.fulfill();
         });
@@ -163,16 +167,14 @@ Maker.prototype = {
 
     /**
      * Получить все модули для сборки
-     * @param {String} directory Путь до стартовой директории
-     * @param {String} [postfix] Постфикс искомых файлов
      * @returns {Promise}
      */
-    getModuleList: function(directory, postfix) {
+    getModuleList: function() {
 
         var promise = vow.promise(),
             modules = {};
 
-        this.getFileList(directory, postfix || 'js').then(function(fileList) {
+        this.getFileList().then(function(fileList) {
             fileList.forEach(function(filePath, index) {
                 this.openFile(filePath).then(function(fileContent) {
                     modules = _.extend(modules, this.getFileModules(fileContent));
@@ -188,15 +190,13 @@ Maker.prototype = {
 
     /**
      * Получить отсортированные по зависимостям модули
-     * @param {String} directory Путь до стартовой директории
-     * @param {String} [postfix] Постфикс искомых файлов
      * @returns {Promise}
      */
-    getModules: function(directory, postfix) {
+    getModules: function() {
 
         var promise = vow.promise();
 
-        this.getModuleList(directory, postfix).then(function(modules) {
+        this.getModuleList().then(function(modules) {
             promise.fulfill(this.sortModules(modules));
         }.bind(this));
 
@@ -205,17 +205,14 @@ Maker.prototype = {
 
     /**
      * Получить отсортированные модули для конкретного модуля
-     * @param {String} name Имя целевого модуля
-     * @param {String} directory Путь до стартовой директории
-     * @param {String} [postfix] Постфикс искомых файлов
      * @returns {Promise}
      */
-    getModule: function(name, directory, postfix) {
+    getModule: function() {
 
         var promise = vow.promise();
 
-        this.getModules(directory, postfix).then(function(modules) {
-            promise.fulfill(modules.splice(0, this.getModuleIndex(name) + 1));
+        this.getModules().then(function(modules) {
+            promise.fulfill(modules.splice(0, this.getModuleIndex(this.options.module) + 1));
         }.bind(this));
 
         return promise;

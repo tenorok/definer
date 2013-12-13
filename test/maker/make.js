@@ -12,9 +12,9 @@ describe('Тестирование сборки модулей.', function() {
 
     it('Сборка', function(done) {
 
-        new Maker().make(saveFilePath, {
+        new Maker({
             directory: path.join(__dirname, 'modules')
-        }).then(function() {
+        }).make(saveFilePath).then(function() {
 
             fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {
                 assert.equal(data, helper.getClosureString());

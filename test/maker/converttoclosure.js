@@ -7,9 +7,11 @@ describe('Конвертирование модулей в строку без d
 
     it('Конвертирование модулей с файловой системы', function(done) {
 
-        var maker = new Maker();
+        var maker = new Maker({
+            directory: path.join(__dirname, 'modules')
+        });
 
-        maker.getModules(path.join(__dirname, 'modules')).then(function(modules) {;
+        maker.getModules().then(function(modules) {
 
             assert.deepEqual(
                 maker.convertToClosure(),

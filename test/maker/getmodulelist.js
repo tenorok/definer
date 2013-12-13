@@ -5,7 +5,9 @@ var path = require('path'),
 describe('getModuleList', function() {
 
     it('getModuleList modules', function(done) {
-        new Maker().getModuleList(path.join(__dirname, 'modules')).then(function(modules) {
+        new Maker({
+            directory: path.join(__dirname, 'modules')
+        }).getModuleList().then(function(modules) {
 
             var standardModules = {
                     'a': [],

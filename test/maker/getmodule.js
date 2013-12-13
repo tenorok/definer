@@ -6,10 +6,15 @@ function getModuleNames(modules) {
     return modules.map(function(module) { return module.name });
 }
 
+var modulesPath = path.join(__dirname, 'modules');
+
 describe('Сборка зависимостей для конкретного модуля.', function() {
 
     it('Сборка модуля d', function(done) {
-        new Maker().getModule('d', path.join(__dirname, 'modules')).then(function(modules) {
+        new Maker({
+            directory: modulesPath,
+            module: 'd'
+        }).getModule().then(function(modules) {
 
             assert.deepEqual(
                 getModuleNames(modules),
@@ -21,7 +26,10 @@ describe('Сборка зависимостей для конкретного м
     });
 
     it('Сборка модуля e', function(done) {
-        new Maker().getModule('e', path.join(__dirname, 'modules')).then(function(modules) {
+        new Maker({
+            directory: modulesPath,
+            module: 'e'
+        }).getModule().then(function(modules) {
 
             assert.deepEqual(
                 getModuleNames(modules),
@@ -33,7 +41,10 @@ describe('Сборка зависимостей для конкретного м
     });
 
     it('Сборка модуля a', function(done) {
-        new Maker().getModule('a', path.join(__dirname, 'modules')).then(function(modules) {
+        new Maker({
+            directory: modulesPath,
+            module: 'a'
+        }).getModule().then(function(modules) {
 
             assert.deepEqual(
                 getModuleNames(modules),

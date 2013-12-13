@@ -9,7 +9,9 @@ function getModuleNames(modules) {
 describe('Тестирование сортировки модулей по зависимостям.', function() {
 
     it('Сортировка модулей с файловой системы', function(done) {
-        new Maker().getModules(path.join(__dirname, 'modules')).then(function(modules) {
+        new Maker({
+            directory: path.join(__dirname, 'modules')
+        }).getModules().then(function(modules) {
 
             // Модули должны быть отсортированы в порядке, определяемом зависимостями
             assert.deepEqual(

@@ -3,34 +3,32 @@ var assert = require('chai').assert,
 
 describe('isValidFilePostfix', function() {
 
-    var maker = new Maker();
-
     it('File: filename.js; Postfix: js', function() {
-        assert.isTrue(maker.isValidFilePostfix('filename.js', 'js'));
+        assert.isTrue(new Maker({ postfix: 'js' }).isValidFilePostfix('filename.js'));
     });
 
     it('File: filename.js; Postfix: css', function() {
-        assert.isFalse(maker.isValidFilePostfix('filename.js', 'css'));
+        assert.isFalse(new Maker({ postfix: 'css' }).isValidFilePostfix('filename.js'));
     });
 
     it('File: filename.js; Postfix: module.js', function() {
-        assert.isFalse(maker.isValidFilePostfix('filename.js', 'module.js'));
+        assert.isFalse(new Maker({ postfix: 'module.js' }).isValidFilePostfix('filename.js'));
     });
 
     it('File: name.my.module.js; Postfix: js', function() {
-        assert.isTrue(maker.isValidFilePostfix('name.my.module.js', 'js'));
+        assert.isTrue(new Maker({ postfix: 'js' }).isValidFilePostfix('name.my.module.js'));
     });
 
     it('File: name.my.module.js; Postfix: module.js', function() {
-        assert.isTrue(maker.isValidFilePostfix('name.my.module.js', 'module.js'));
+        assert.isTrue(new Maker({ postfix: 'module.js' }).isValidFilePostfix('name.my.module.js'));
     });
 
     it('File: name.my.module.js; Postfix: my.module.js', function() {
-        assert.isTrue(maker.isValidFilePostfix('name.my.module.js', 'my.module.js'));
+        assert.isTrue(new Maker({ postfix: 'my.module.js' }).isValidFilePostfix('name.my.module.js'));
     });
 
     it('File: name.my.module.js; Postfix: name.my.module.js', function() {
-        assert.isFalse(maker.isValidFilePostfix('name.my.module.js', 'name.my.module.js'));
+        assert.isFalse(new Maker({ postfix: 'name.my.module.js' }).isValidFilePostfix('name.my.module.js'));
     });
 
 });

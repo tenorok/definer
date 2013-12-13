@@ -11,7 +11,9 @@ function getAbsoluteFilePath(fileList) {
 describe('getFileList', function() {
 
     it('getFileList modules', function(done) {
-        new Maker().getFileList(path.join(__dirname, 'modules'), 'js').then(function(filelist) {
+        new Maker({
+            directory: path.join(__dirname, 'modules')
+        }).getFileList().then(function(filelist) {
 
             assert.deepEqual(filelist, getAbsoluteFilePath([
                 'modules/b.js',
