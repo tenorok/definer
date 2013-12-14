@@ -12,7 +12,10 @@
     "dependencies": {
         "vow": "~0.3.11",
         "walk": "~2.2.1",
-        "underscore": "~1.5.2"
+        "graceful-fs": "~2.0.1",
+        "underscore": "~1.5.2",
+        "commander": "~2.1.0",
+        "cli-color": "~0.2.3"
     },
     "devDependencies": {
         "mocha": "~1.15.1",
