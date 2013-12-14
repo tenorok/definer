@@ -41,11 +41,11 @@ function Maker(options) {
      * Опции сборки
      * @type {{directory: string, module: string|boolean, postfix: string}}
      */
-    this.options = _.extend({
+    this.options = _.defaults(options || {}, {
         directory: '.',
         module: false,
         postfix: 'js'
-    }, options);
+    });
 }
 
 Maker.prototype = {
