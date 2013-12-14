@@ -234,7 +234,7 @@ Maker.prototype = {
         var promise = vow.promise();
 
         this.getModules().then(function(modules) {
-            promise.fulfill(modules.splice(0, this.getModuleIndex(this.options.module) + 1));
+            promise.fulfill(this.modules = modules.splice(0, this.getModuleIndex(this.options.module) + 1));
         }.bind(this));
 
         return promise;
