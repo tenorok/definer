@@ -270,7 +270,8 @@ Maker.prototype = {
 
         closure.push('})(this);');
 
-        return this.closure = closure.join('');
+        // Если был добавлен хотя бы один модуль
+        return this.closure = closure.length > 2 ? closure.join('') : '';
     },
 
     /**
