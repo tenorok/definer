@@ -77,6 +77,16 @@ module.exports = {
             'e = (function (d) { return d + \'e\'; }).call(global, d),\n' +
             'f = (function () { return \'f\'; }).call(global);\n' +
         '})(this);';
+    },
+
+    getClosureStringModuleC: function() {
+        return '(function(global) {\n' +
+            'var a = (function () { return \'a\'; }).call(global),\n' +
+            'b = (function (a){return a + \'b\';}).call(global, a),\n' +
+            'c = (function (a, b) {\n' +
+            '    return a + b + \'c\';\n' +
+            '}).call(global, a, b);\n' +
+            '})(this);';
     }
 
 };
