@@ -317,6 +317,10 @@ Maker.prototype = {
     addModule: function(method, name, info) {
         if(this.isModuleExist(name)) return;
 
+        if(!info) {
+            return console.log(clicolor.red('Undefined module:'), name);
+        }
+
         this.modules[method]({
             name: name,
             deps: info.dependencies,
