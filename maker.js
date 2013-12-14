@@ -59,9 +59,10 @@ Maker.prototype = {
 
         this.saveFilePath = filePath;
 
-        var promise = vow.promise();
+        var promise = vow.promise(),
+            method = this.options.module ? 'getModule' : 'getModules';
 
-        this.getModules().then(function() {
+        this[method]().then(function() {
             this.convertToClosure();
             this.saveClosureToFile().then(function() {
                 promise.fulfill();
