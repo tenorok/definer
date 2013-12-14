@@ -1,10 +1,11 @@
-const fs = require('fs'),
-    path = require('path'),
+const path = require('path'),
     vm = require('vm'),
 
     vow = require('vow'),
     walk = require('walk'),
-    _ = require('underscore');
+    fs = require('graceful-fs'),
+    _ = require('underscore'),
+    clicolor = require('cli-color');
 
 /**
  * Конструктор
