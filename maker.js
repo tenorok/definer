@@ -192,6 +192,11 @@ Maker.prototype = {
             modules = {};
 
         this.getFileList().then(function(fileList) {
+
+            if(!fileList.length) {
+                return promise.fulfill({});
+            }
+
             fileList.forEach(function(filePath, index) {
                 this.openFile(filePath).then(function(fileContent) {
                     modules = _.extend(modules, this.getFileModules(filePath, fileContent));
