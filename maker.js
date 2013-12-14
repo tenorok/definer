@@ -67,8 +67,8 @@ Maker.prototype = {
             this.convertToClosure();
             this.saveClosureToFile().then(function(saved) {
                 promise.fulfill(saved);
-            });
-        }.bind(this));
+            }).done();
+        }.bind(this)).done();
 
         return promise;
     },
@@ -203,9 +203,9 @@ Maker.prototype = {
                     if(index + 1 >= fileList.length) { // Если последний файл
                         promise.fulfill(modules);
                     }
-                }.bind(this));
+                }.bind(this)).done();
             }.bind(this));
-        }.bind(this));
+        }.bind(this)).done();
 
         return promise;
     },
@@ -220,7 +220,7 @@ Maker.prototype = {
 
         this.getModuleList().then(function(modules) {
             promise.fulfill(this.sortModules(modules));
-        }.bind(this));
+        }.bind(this)).done();
 
         return promise;
     },
@@ -235,7 +235,7 @@ Maker.prototype = {
 
         this.getModules().then(function(modules) {
             promise.fulfill(this.modules = modules.splice(0, this.getModuleIndex(this.options.module) + 1));
-        }.bind(this));
+        }.bind(this)).done();
 
         return promise;
     },
