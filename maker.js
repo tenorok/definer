@@ -147,19 +147,27 @@ Maker.prototype = {
 
     /**
      * Получить находящиеся в файле модули
+     * @param {String} filePath Путь до файла
      * @param {String} fileContent Содержимое файла
      * @returns {Object|null} Объект модулей файла или null при их отсутствии
      */
-    getFileModules: function(fileContent) {
+    getFileModules: function(filePath, fileContent) {
+
         var modules = {};
-        vm.runInNewContext(fileContent, {
-            define: function(name, body) {
-                modules[name] = {
-                    dependencies: this.getArguments(body),
-                    body: body
-                };
-            }.bind(this)
-        });
+
+        try {
+            vm.runInNewContext(fileContent, {
+                define: function(name, body) {
+                    modules[name] = {
+                        dependencies: this.getArguments(body),
+                        body: body
+                    };
+                }.bind(this)
+            });
+        } catch(e) {
+            console.log(clicolor.yellow('Skipped:'), filePath, '\n         ' + e);
+        }
+
         return Object.keys(modules).length ? modules : null;
     },
 
@@ -185,7 +193,7 @@ Maker.prototype = {
         this.getFileList().then(function(fileList) {
             fileList.forEach(function(filePath, index) {
                 this.openFile(filePath).then(function(fileContent) {
-                    modules = _.extend(modules, this.getFileModules(fileContent));
+                    modules = _.extend(modules, this.getFileModules(filePath, fileContent));
                     if(index + 1 >= fileList.length) { // Если последний файл
                         promise.fulfill(modules);
                     }
