@@ -64,8 +64,8 @@ Maker.prototype = {
 
         this[method]().then(function() {
             this.convertToClosure();
-            this.saveClosureToFile().then(function() {
-                promise.fulfill();
+            this.saveClosureToFile().then(function(saved) {
+                promise.fulfill(saved);
             });
         }.bind(this));
 
@@ -130,11 +130,18 @@ Maker.prototype = {
      * @returns {Promise}
      */
     saveClosureToFile: function() {
+
         var promise = vow.promise();
-        fs.writeFile(this.saveFilePath, this.closure, function(err) {
-            if(err) return promise.reject(err);
-            promise.fulfill();
-        });
+
+        if(this.closure) {
+            fs.writeFile(this.saveFilePath, this.closure, function(err) {
+                if(err) return promise.reject(err);
+                promise.fulfill(true);
+            });
+        } else {
+            promise.fulfill(false);
+        }
+
         return promise;
     },
 
