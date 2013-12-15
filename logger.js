@@ -4,9 +4,16 @@ const _ = require('underscore'),
 /**
  * Класс логгирования сообщений
  * @constructor
+ * @param {Array} [types] Разрешённые типы вывода сообщений
  * @param {Object} [colors] Цвета для вывода сообщений
  */
-function Logger(colors) {
+function Logger(types, colors) {
+
+    /**
+     * Разрешённые типы вывода сообщений
+     * @type {Array}
+     */
+    this.types = types || [];
 
     /**
      * Цвета для вывода сообщений
@@ -21,6 +28,19 @@ function Logger(colors) {
 }
 
 Logger.prototype = {
+
+    /**
+     * Разрешён ли тип сообщения к выводу
+     * @param {String} type Тип сообщения
+     * @returns {boolean}
+     */
+    isAccessMode: function(type) {
+
+        // Если не указан ни один режим, то они все разрешены
+        if(!this.types.length) return true;
+
+        return !!~this.types.indexOf(type);
+    },
 
     /**
      * Вывести логирующее сообщение
@@ -65,6 +85,7 @@ Logger.prototype = {
      * @param {Array} message Строки сообщения
      */
     print: function(type, title, message) {
+        if(!this.isAccessMode(type)) return;
 
         // Если заголовок не передан
         if(_.isArray(title)) {
