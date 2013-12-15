@@ -1,7 +1,8 @@
 const path = require('path'),
     commander = require('commander'),
-    clicolor = require('cli-color'),
-    Maker = require('./maker.js');
+
+    Maker = require('./maker'),
+    Logger = require('./logger');
 
 commander
     .version('0.0.1')
@@ -16,12 +17,15 @@ commander
  * @constructor
  */
 function Cli(filePath, options) {
+
     this.saveFilePath = this.getAbsolutePath(filePath);
     this.options = {
         directory: this.getAbsolutePath(options.directory),
         module: options.module,
         postfix: options.postfix
     };
+
+    this.console = new Logger();
 }
 
 Cli.prototype = {
@@ -50,8 +54,8 @@ Cli.prototype = {
             postfix: this.options.postfix
         }).make(this.saveFilePath).then(function(saved) {
             saved
-                ? console.log(clicolor.green('Saved:'), this.saveFilePath)
-                : console.log(clicolor.redBright('Modules not found'));
+                ? this.console.info('Saved', [this.saveFilePath])
+                : this.console.error(['Modules not found']);
         }.bind(this)).done();
     }
 };
