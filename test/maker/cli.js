@@ -11,7 +11,7 @@ function execCommand(options, standardResult, done) {
 
     savePromise = vow.promise();
 
-    helper.exec('./bin/definer ' + options + ' ' + saveFilePath)
+    helper.exec('./bin/definer ' + options + ' -v e ' + saveFilePath)
         .then(function() {
             return helper.readFile(saveFilePath);
         })

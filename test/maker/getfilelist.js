@@ -12,7 +12,8 @@ describe('getFileList', function() {
 
     it('getFileList modules', function(done) {
         new Maker({
-            directory: path.join(__dirname, 'modules')
+            directory: path.join(__dirname, 'modules'),
+            verbose: ['error']
         }).getFileList().then(function(filelist) {
 
             assert.deepEqual(filelist, getAbsoluteFilePath([

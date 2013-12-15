@@ -13,7 +13,8 @@ describe('Сборка зависимостей для конкретного м
     it('Сборка модуля d', function(done) {
         new Maker({
             directory: modulesPath,
-            module: 'd'
+            module: 'd',
+            verbose: ['error']
         }).getModule().then(function(modules) {
 
             assert.deepEqual(
@@ -28,7 +29,8 @@ describe('Сборка зависимостей для конкретного м
     it('Сборка модуля e', function(done) {
         new Maker({
             directory: modulesPath,
-            module: 'e'
+            module: 'e',
+            verbose: ['error']
         }).getModule().then(function(modules) {
 
             assert.deepEqual(
@@ -43,7 +45,8 @@ describe('Сборка зависимостей для конкретного м
     it('Сборка модуля a', function(done) {
         new Maker({
             directory: modulesPath,
-            module: 'a'
+            module: 'a',
+            verbose: ['error']
         }).getModule().then(function(modules) {
 
             assert.deepEqual(
