@@ -6,7 +6,8 @@ describe('getModuleList', function() {
 
     it('getModuleList modules', function(done) {
         new Maker({
-            directory: path.join(__dirname, 'modules')
+            directory: path.join(__dirname, 'modules'),
+            verbose: ['error']
         }).getModuleList().then(function(modules) {
 
             var standardModules = {

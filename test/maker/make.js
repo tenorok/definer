@@ -13,7 +13,8 @@ describe('Тестирование сборки модулей.', function() {
     it('Сборка', function(done) {
 
         new Maker({
-            directory: path.join(__dirname, 'modules')
+            directory: path.join(__dirname, 'modules'),
+            verbose: ['error']
         }).make(saveFilePath).then(function() {
 
             fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {

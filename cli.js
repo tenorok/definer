@@ -1,14 +1,16 @@
 const path = require('path'),
     commander = require('commander'),
-    clicolor = require('cli-color'),
-    Maker = require('./maker.js');
+
+    Maker = require('./maker'),
+    Logger = require('./logger');
 
 commander
     .version('0.0.1')
     .usage('[options] <file>')
-    .option('-d, --directory [path]', 'start directory path', '.')
-    .option('-m, --module [name]', 'target module name')
-    .option('-p, --postfix [postfix]', 'postfix to find files')
+    .option('-d, --directory <path>', 'start directory path', '.')
+    .option('-m, --module <name>', 'target module name')
+    .option('-p, --postfix <postfix>', 'postfix to find files')
+    .option('-v --verbose <modes>', 'l - log, i - info, w - warn, e - error', function(modes) { return modes.split(''); })
     .parse(process.argv);
 
 /**
@@ -16,18 +18,24 @@ commander
  * @constructor
  */
 function Cli(filePath, options) {
+
     this.saveFilePath = this.getAbsolutePath(filePath);
+
     this.options = {
         directory: this.getAbsolutePath(options.directory),
         module: options.module,
-        postfix: options.postfix
+        postfix: options.postfix,
+        verbose: this.resolveVerboseTypes(options.verbose || [])
     };
+
+    this.console = new Logger(this.options.verbose);
 }
 
 Cli.prototype = {
 
     /**
      * Current working directory
+     * @type {String}
      */
     cwd: process.cwd(),
 
@@ -41,17 +49,40 @@ Cli.prototype = {
     },
 
     /**
+     * Соответствие сокращённых и полных имён типов сообщений
+     * @type {Object}
+     */
+    verboseAliases: {
+        l: 'log',
+        i: 'info',
+        w: 'warn',
+        e: 'error'
+    },
+
+    /**
+     * Развернуть сокращённые типы сообщений в полные
+     * @param {String[]} verbose Сокращённые типы сообщений
+     * @returns {String[]}
+     */
+    resolveVerboseTypes: function(verbose) {
+        return verbose.map(function(type) {
+            return this.verboseAliases[type];
+        }.bind(this));
+    },
+
+    /**
      * Запустить выполнение
      */
     run: function() {
         new Maker({
             directory: this.options.directory,
             module: this.options.module,
-            postfix: this.options.postfix
+            postfix: this.options.postfix,
+            verbose: this.options.verbose
         }).make(this.saveFilePath).then(function(saved) {
             saved
-                ? console.log(clicolor.green('Saved:'), this.saveFilePath)
-                : console.log(clicolor.redBright('Modules not found'));
+                ? this.console.info('Saved', [this.saveFilePath])
+                : this.console.error(['Modules not found']);
         }.bind(this)).done();
     }
 };
@@ -65,6 +96,7 @@ module.exports.run = function() {
     new Cli(commander.args[0], {
         directory: commander.directory,
         module: commander.module,
-        postfix: commander.postfix
+        postfix: commander.postfix,
+        verbose: commander.verbose
     }).run();
 };

@@ -8,7 +8,8 @@ describe('Конвертирование модулей в строку без d
     it('Конвертирование модулей с файловой системы', function(done) {
 
         var maker = new Maker({
-            directory: path.join(__dirname, 'modules')
+            directory: path.join(__dirname, 'modules'),
+            verbose: ['error']
         });
 
         maker.getModules().then(function(modules) {

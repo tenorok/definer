@@ -10,7 +10,8 @@ describe('Тестирование сортировки модулей по за
 
     it('Сортировка модулей с файловой системы', function(done) {
         new Maker({
-            directory: path.join(__dirname, 'modules')
+            directory: path.join(__dirname, 'modules'),
+            verbose: ['error']
         }).getModules().then(function(modules) {
 
             // Модули должны быть отсортированы в порядке, определяемом зависимостями
@@ -24,7 +25,9 @@ describe('Тестирование сортировки модулей по за
     });
 
     it('Сортировка аналогичных файловой системе модулей в другом порядке', function() {
-        var modules = new Maker().sortModules({
+        var modules = new Maker({
+            verbose: ['error']
+        }).sortModules({
             e: { dependencies: ['d'] },
             d: { dependencies: ['b', 'a', 'c'] },
             f: { dependencies: [] },
@@ -40,7 +43,9 @@ describe('Тестирование сортировки модулей по за
     });
 
     it('Сортировка закрученных модулей', function() {
-        var modules = new Maker().sortModules({
+        var modules = new Maker({
+            verbose: ['error']
+        }).sortModules({
             b: { dependencies: ['a', 'c'] },
             a: { dependencies: ['f', 'e'] },
             d: { dependencies: ['a', 'b'] },

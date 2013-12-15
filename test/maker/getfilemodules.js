@@ -20,7 +20,9 @@ function modulePath(fileName) {
  * @param {Function} done Функция Mocha
  */
 function assertFileModules(fileName, method, modules, done) {
-    var maker = new Maker(),
+    var maker = new Maker({
+            verbose: ['error']
+        }),
         fileModulePath = modulePath(fileName);
     maker.openFile(fileModulePath).then(function(fileContent) {
 
