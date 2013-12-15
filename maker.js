@@ -41,19 +41,20 @@ function Maker(options) {
 
     /**
      * Опции сборки
-     * @type {{directory: string, module: string|boolean, postfix: string}}
+     * @type {{directory: String, module: String|boolean, postfix: String, verbose: Array}}
      */
     this.options = _.defaults(options || {}, {
         directory: '.',
         module: false,
-        postfix: 'js'
+        postfix: 'js',
+        verbose: []
     });
 
     /**
      * Экземпляр для логирования сборки
      * @type {Logger}
      */
-    this.console = new Logger();
+    this.console = new Logger(this.options.verbose);
 }
 
 Maker.prototype = {
