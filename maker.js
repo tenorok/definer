@@ -5,12 +5,13 @@ const path = require('path'),
     walk = require('walk'),
     fs = require('graceful-fs'),
     _ = require('underscore'),
-    clicolor = require('cli-color');
+
+    Logger = require('./logger');
 
 /**
- * Конструктор
+ * Сборщик модульной системы Definer
  * @constructor
- * @param {Object} options Опции сборки
+ * @param {Object} [options] Опции сборки
  */
 function Maker(options) {
 
@@ -47,6 +48,12 @@ function Maker(options) {
         module: false,
         postfix: 'js'
     });
+
+    /**
+     * Экземпляр для логирования сборки
+     * @type {Logger}
+     */
+    this.console = new Logger();
 }
 
 Maker.prototype = {
@@ -163,10 +170,11 @@ Maker.prototype = {
                         dependencies: this.getArguments(body),
                         body: body
                     };
+                    this.console.log('Include', [filePath, '\n         Module:', name]);
                 }.bind(this)
             });
         } catch(e) {
-            console.log(clicolor.yellow('Skipped:'), filePath, '\n         ' + e);
+            this.console.warn('Skipped', [filePath, '\n         ' + e]);
         }
 
         return Object.keys(modules).length ? modules : null;
@@ -318,7 +326,7 @@ Maker.prototype = {
         if(this.isModuleExist(name)) return;
 
         if(!info) {
-            return console.log(clicolor.red('Undefined module:'), name);
+            return this.console.error('Undefined module', [name]);
         }
 
         this.modules[method]({
