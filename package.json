@@ -22,12 +22,14 @@
     },
     "devDependencies": {
         "mocha": "~1.15.1",
-        "chai": "~1.8.1"
+        "chai": "~1.8.1",
+        "jsdoc": "~3.3.0"
     },
     "bin": {
         "definer": "./bin/definer"
     },
     "scripts": {
-        "test": "./node_modules/.bin/mocha test/ test/maker/"
+        "test": "./node_modules/.bin/mocha test/ test/maker/",
+        "jsdoc": "./node_modules/.bin/jsdoc -d jsdoc maker.js"
     }
 }
