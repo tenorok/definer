@@ -29,7 +29,7 @@
         "definer": "./bin/definer"
     },
     "scripts": {
-        "test": "./node_modules/.bin/mocha test/ test/maker/",
+        "test": "./node_modules/.bin/mocha --reporter list test/ test/maker/",
         "jsdoc": "./node_modules/.bin/jsdoc -d jsdoc maker.js"
     }
 }
