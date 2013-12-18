@@ -17,24 +17,28 @@ function Maker(options) {
 
     /**
      * Отсортированные по зависимостям модули
+     * @private
      * @type {Object[]}
      */
     this.modules = [];
 
     /**
      * Имена добавленных в отсортированный массив модулей
+     * @private
      * @type {String[]}
      */
     this.sortedModuleNames = [];
 
     /**
      * Строка замыкания из отсортированного списка модулей
+     * @private
      * @type {String}
      */
     this.closure = '';
 
     /**
      * Путь до сохраняемого файла
+     * @private
      * @type {String}
      */
     this.saveFilePath = '';
@@ -52,6 +56,7 @@ function Maker(options) {
 
     /**
      * Экземпляр для логирования сборки
+     * @private
      * @type {Logger}
      */
     this.console = new Logger(this.options.verbose);
@@ -109,6 +114,7 @@ Maker.prototype = {
 
     /**
      * Проверить, соответствует ли постфикс файлу
+     * @private
      * @param {String} fileName Имя файла
      * @returns {boolean}
      */
@@ -122,6 +128,7 @@ Maker.prototype = {
 
     /**
      * Открыть файл
+     * @private
      * @param {String} filePath Путь до файла
      * @returns {Promise}
      */
@@ -136,6 +143,7 @@ Maker.prototype = {
 
     /**
      * Сохранить строку замыкания в файл
+     * @private
      * @returns {Promise}
      */
     saveClosureToFile: function() {
@@ -183,6 +191,7 @@ Maker.prototype = {
 
     /**
      * Получить массив имён параметров тела модуля
+     * @private
      * @returns {String[]}
      */
     getArguments: function(body) {
@@ -193,6 +202,7 @@ Maker.prototype = {
 
     /**
      * Получить все модули для сборки
+     * @private
      * @returns {Promise}
      */
     getModuleList: function() {
@@ -285,6 +295,7 @@ Maker.prototype = {
 
     /**
      * Отсортировать полученный список всех модулей для сборки
+     * @private
      * @param {Object} modules Список всех модулей
      * @returns {Object[]}
      */
@@ -317,6 +328,7 @@ Maker.prototype = {
 
     /**
      * Добавить модуль в отсортированный массив
+     * @private
      * @param {String} method Метод для работы с массивом
      * @param {String} name Имя модуля
      * @param {Object} info Информация о модуле
@@ -341,6 +353,7 @@ Maker.prototype = {
 
     /**
      * Добавлен ли уже модуль в отсортированный массив
+     * @private
      * @param {String} name Имя модуля
      * @returns {boolean}
      */
@@ -350,6 +363,7 @@ Maker.prototype = {
 
     /**
      * Расположить один модуль перед другим
+     * @private
      * @param {String} name Имя основного модуля, перед которым будет располагаться модуль-зависимость
      * @param {String} dependency Имя модуля-зависимости
      * @param {Object} info Информация о модуле
@@ -375,6 +389,7 @@ Maker.prototype = {
 
     /**
      * Получить индекс модуля в сортируемом массиве
+     * @private
      * @param {String} name Имя модуля
      * @returns {number}
      */
@@ -389,6 +404,7 @@ Maker.prototype = {
 
     /**
      * Подвинуть модуль-зависимость перед основным модулем
+     * @private
      * @param {number} moduleIndex Индекс основного модуля
      * @param {number} dependencyIndex Индекс модуля-зависимости
      */
