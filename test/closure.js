@@ -1,9 +1,9 @@
 var assert = require('chai').assert,
     define = require('../definer.js').define;
 
-describe('Closure', function() {
+describe('Тест работы модулей с замыканиями.', function() {
 
-    it('Module a2', function() {
+    it('Модуль a2', function() {
         var a2 = define('a2', function() {
             function getA() { return 1; }
             function getB() { return 2; }
@@ -13,7 +13,7 @@ describe('Closure', function() {
         assert.equal(a2(2), 5);
     });
 
-    it('Module b2', function() {
+    it('Модуль b2', function() {
         var b2 = define('b2', function() {
             function getT() { return true; }
             function getF() { return false; }
@@ -23,7 +23,7 @@ describe('Closure', function() {
         assert.equal(b2.f, false);
     });
 
-    it('Module c2', function() {
+    it('Модуль c2', function() {
         var c2 = define('c2', function(a2, b2) {
             return [
                 a2(2) + 2,
