@@ -42,29 +42,29 @@ function assertFileModules(fileName, method, modules, done) {
     }).done();
 }
 
-describe('getFileModules', function() {
+describe('Тестирование метода getFileModules.', function() {
 
-    it('getFileModules b', function(done) {
+    it('Файл b.js', function(done) {
         assertFileModules('b', 'deepEqual', {'b': ['a']}, done);
     });
 
-    it('getFileModules d', function(done) {
+    it('Файл d.js', function(done) {
         assertFileModules('d', 'deepEqual', {'d': ['a', 'b', 'c']}, done);
     });
 
-    it('getFileModules c', function(done) {
+    it('Файл sub/c.js', function(done) {
         assertFileModules('sub/c', 'deepEqual', {'c': ['a', 'b']}, done);
     });
 
-    it('getFileModules a', function(done) {
+    it('Файл sub/sub/a.js', function(done) {
         assertFileModules('sub/sub/a', 'deepEqual', {'a': []}, done);
     });
 
-    it('getFileModules ef', function(done) {
+    it('Файл sub/sub/ef.js', function(done) {
         assertFileModules('sub/sub/ef', 'deepEqual', {'e': ['d'], 'f': []}, done);
     });
 
-    it('getFileModules fake', function(done) {
+    it('Файл sub/sub/fake.js', function(done) {
         assertFileModules('sub/sub/fake', 'isNull', {}, done);
     });
 

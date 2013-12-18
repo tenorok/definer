@@ -8,9 +8,9 @@ function getAbsoluteFilePath(fileList) {
     });
 }
 
-describe('getFileList', function() {
+describe('Тестирование метода getFileList.', function() {
 
-    it('getFileList modules', function(done) {
+    it('Получение всех файлов в директории', function(done) {
         new Maker({
             directory: path.join(__dirname, 'modules'),
             verbose: ['error']

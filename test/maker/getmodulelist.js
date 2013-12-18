@@ -2,9 +2,9 @@ var path = require('path'),
     assert = require('chai').assert,
     Maker = require('../../maker.js');
 
-describe('getModuleList', function() {
+describe('Тестирование метода getModuleList.', function() {
 
-    it('getModuleList modules', function(done) {
+    it('Получение списка всех модулей с файловой системы', function(done) {
         new Maker({
             directory: path.join(__dirname, 'modules'),
             verbose: ['error']
