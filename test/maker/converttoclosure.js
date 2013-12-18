@@ -12,7 +12,7 @@ describe('Конвертирование модулей в строку без d
             verbose: ['error']
         });
 
-        maker.getModules().then(function(modules) {
+        maker.getModules().then(function() {
 
             assert.deepEqual(
                 maker.convertToClosure(),
