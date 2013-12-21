@@ -25,6 +25,7 @@
         "chai": "~1.8.1",
         "jsdoc": "~3.3.0"
     },
+    "main": "main.js",
     "bin": {
         "definer": "./bin/definer"
     },
