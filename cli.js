@@ -10,7 +10,7 @@ commander
     .option('-d, --directory <path>', 'start directory path', '.')
     .option('-m, --module <name>', 'target module name')
     .option('-p, --postfix <postfix>', 'postfix to find files')
-    .option('-v --verbose <modes>', 'l - log, i - info, w - warn, e - error', function(modes) { return modes.split(''); })
+    .option('-v, --verbose <modes>', 'l - log, i - info, w - warn, e - error', function(modes) { return modes.split(''); })
     .parse(process.argv);
 
 /**
