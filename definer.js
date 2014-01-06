@@ -91,7 +91,7 @@
      * @param {Function} body Тело модуля
      * @returns {*}
      */
-    global.define = function(name, body) {
+    global.definer = function(name, body) {
         return new Definer(name, body).define();
     };
 
