@@ -58,7 +58,7 @@ modules/
 В процессе сборки definer выполнит рекурсивный поиск модулей в файлах `*.js` текущей директории и собранный результат будет сохранён в файл `all.js`:
 
 ```javascript
-(function(global) {
+(function(global, undefined) {
 var a = (function () { return 'a'; }).call(global),
     b = (function () { return 'b'; }).call(global),
     c = (function (a, b) { return a + b + 'c'; }).call(global, a, b);
