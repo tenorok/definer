@@ -61,7 +61,7 @@ module.exports = {
     },
 
     getClosureString: function() {
-        return '(function(global) {\n' +
+        return '(function(global, undefined) {\n' +
             'var a = (function () { return \'a\'; }).call(global),\n' +
             'b = (function (a){return a + \'b\';}).call(global, a),\n' +
             'c = (function (a, b) {\n' +
@@ -80,7 +80,7 @@ module.exports = {
     },
 
     getClosureStringModuleC: function() {
-        return '(function(global) {\n' +
+        return '(function(global, undefined) {\n' +
             'var a = (function () { return \'a\'; }).call(global),\n' +
             'b = (function (a){return a + \'b\';}).call(global, a),\n' +
             'c = (function (a, b) {\n' +
