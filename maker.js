@@ -266,7 +266,7 @@ Maker.prototype = {
     convertToClosure: function() {
 
         var length = this.modules.length,
-            closure = ['(function(global) {\nvar '];
+            closure = ['(function(global, undefined) {\nvar '];
 
         this.modules.forEach(function(module, index) {
             closure.push(module.name);
