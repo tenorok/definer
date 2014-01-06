@@ -1,10 +1,10 @@
 var assert = require('chai').assert,
-    define = require('../definer.js').define;
+    definer = require('../definer.js').definer;
 
 describe('Тест работы модулей с замыканиями.', function() {
 
     it('Модуль a2', function() {
-        var a2 = define('a2', function() {
+        var a2 = definer('a2', function() {
             function getA() { return 1; }
             function getB() { return 2; }
             return function(c) { return getA() + getB() + (c || 0) };
@@ -14,7 +14,7 @@ describe('Тест работы модулей с замыканиями.', func
     });
 
     it('Модуль b2', function() {
-        var b2 = define('b2', function() {
+        var b2 = definer('b2', function() {
             function getT() { return true; }
             function getF() { return false; }
             return { getT: getT, f: getF() };
@@ -24,7 +24,7 @@ describe('Тест работы модулей с замыканиями.', func
     });
 
     it('Модуль c2', function() {
-        var c2 = define('c2', function(a2, b2) {
+        var c2 = definer('c2', function(a2, b2) {
             return [
                 a2(2) + 2,
                 b2.getT(),
