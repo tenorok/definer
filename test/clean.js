@@ -34,4 +34,9 @@ describe('Тест на очистку глобального контекста
         assert.property(modules, '_');
     });
 
+    it('Модуль a зависит от $', function() {
+        var a = vm.runInContext("definer('a', function($) { return $() + '!'; })", context);
+        assert.equal(a, 'jQuery!');
+    });
+
 });
