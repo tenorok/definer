@@ -106,9 +106,12 @@
 
         /**
          * Обозначить модуль глобальным
+         * @returns {*}
          */
         clean: function() {
-            Definer.pool[this.name].global = true;
+            var module = Definer.pool[this.name];
+            module.global = true;
+            return module.export = this.body;
         }
 
     };
