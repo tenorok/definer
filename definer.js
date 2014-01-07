@@ -21,6 +21,25 @@
      */
     Definer.pool = {};
 
+    /**
+     * Перевести свойства из глобального контекста в модули
+     * @param {String|String[]} modules Имя свойства или массив имён
+     * @returns {Definer}
+     */
+    Definer.clean = function(modules) {
+        if(!Array.isArray(modules)) {
+            modules = [modules];
+        }
+
+        modules.forEach(function(module) {
+            new Definer(module, global[module]).clean();
+            global[module] = undefined;
+            delete global[module];
+        });
+
+        return this;
+    };
+
     Definer.prototype = {
 
         /**
@@ -81,6 +100,13 @@
          */
         define: function() {
             return Definer.pool[this.name].export = this.body.apply(global, this.getDependencies());
+        },
+
+        /**
+         * Обозначить модуль глобальным
+         */
+        clean: function() {
+            Definer.pool[this.name].global = true;
         }
 
     };
@@ -94,5 +120,12 @@
     global.definer = function(name, body) {
         return new Definer(name, body).define();
     };
+
+    /**
+     * Перевести свойства из глобального контекста в модули
+     * @param {String|String[]} modules Имя свойства или массив имён
+     * @returns {Definer}
+     */
+    global.definer.clean = Definer.clean;
 
 })(this);
