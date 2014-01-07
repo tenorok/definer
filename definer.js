@@ -35,7 +35,6 @@
             if(!global[module]) return;
 
             new Definer(module, global[module]).clean();
-            global[module] = undefined;
             delete global[module];
         });
 
