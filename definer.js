@@ -128,4 +128,12 @@
      */
     global.definer.clean = Definer.clean;
 
+    /**
+     * Получить список всех объявленных модулей
+     * @returns {Object}
+     */
+    global.definer.getModules = function() {
+        return Definer.pool;
+    };
+
 })(this);
