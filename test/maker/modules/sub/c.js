@@ -1,3 +1,3 @@
-define( 'c', function(a, b) {
+definer( 'c', function(a, b) {
     return a + b + 'c';
 } )

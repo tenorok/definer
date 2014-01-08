@@ -30,6 +30,13 @@ function Maker(options) {
     this.sortedModuleNames = [];
 
     /**
+     * Модули для собираемого модуля
+     * @private
+     * @type {Object}
+     */
+    this.modulesToModule = {};
+
+    /**
      * Строка замыкания из отсортированного списка модулей
      * @private
      * @type {String}
@@ -73,10 +80,9 @@ Maker.prototype = {
 
         this.saveFilePath = filePath;
 
-        var promise = vow.promise(),
-            method = this.options.module ? 'getModule' : 'getModules';
+        var promise = vow.promise();
 
-        this[method]().then(function() {
+        this.getModules().then(function() {
             this.convertToClosure();
             this.saveClosureToFile().then(function(saved) {
                 promise.fulfill(saved);
@@ -172,15 +178,31 @@ Maker.prototype = {
 
         var modules = {};
 
+        var definer = function(name, body) {
+            modules[name] = {
+                dependencies: this.getArguments(body),
+                body: body
+            };
+            this.console.log('Include', [filePath, '\n         Module:', name]);
+        }.bind(this);
+
+        definer.clean = function(globals) {
+            if(!Array.isArray(globals)) {
+                globals = [globals];
+            }
+
+            globals.forEach(function(name) {
+                modules[name] = {
+                    dependencies: [],
+                    clean: true
+                };
+                this.console.log('Clean', [filePath, '\n       Module:', name]);
+            }, this);
+        }.bind(this);
+
         try {
             vm.runInNewContext(fileContent, {
-                define: function(name, body) {
-                    modules[name] = {
-                        dependencies: this.getArguments(body),
-                        body: body
-                    };
-                    this.console.log('Include', [filePath, '\n         Module:', name]);
-                }.bind(this)
+                definer: definer
             });
         } catch(e) {
             this.console.warn('Skipped', [filePath, '\n         ' + e]);
@@ -223,10 +245,46 @@ Maker.prototype = {
                         promise.fulfill(modules);
                     }
                 }.bind(this)).done();
-            }.bind(this));
+            }, this);
         }.bind(this)).done();
 
         return promise;
+    },
+
+    /**
+     * Получить все модули для собираемого модуля
+     * @private
+     * @returns {Promise}
+     */
+    getModuleListToModule: function() {
+
+        var promise = vow.promise(),
+            target = this.options.module;
+
+        this.getModuleList().then(function(modules) {
+            var modulesToTarget = this.getModulesByDependencies(target, modules);
+            modulesToTarget[target] = modules[target];
+            promise.fulfill(modulesToTarget);
+        }.bind(this)).done();
+
+        return promise;
+    },
+
+    /**
+     * Получить список модулей по зависимостям
+     * @private
+     * @param {String} name Имя модуля
+     * @param {Object} modules Все модули
+     * @returns {Object}
+     */
+    getModulesByDependencies: function(name, modules) {
+
+        modules[name].dependencies.forEach(function(dependency) {
+            this.modulesToModule[dependency] = modules[dependency];
+            this.getModulesByDependencies(dependency, modules);
+        }, this);
+
+        return this.modulesToModule;
     },
 
     /**
@@ -235,25 +293,11 @@ Maker.prototype = {
      */
     getModules: function() {
 
-        var promise = vow.promise();
+        var promise = vow.promise(),
+            method = this.options.module ? 'getModuleListToModule' : 'getModuleList';
 
-        this.getModuleList().then(function(modules) {
+        this[method]().then(function(modules) {
             promise.fulfill(this.sortModules(modules));
-        }.bind(this)).done();
-
-        return promise;
-    },
-
-    /**
-     * Получить отсортированные модули для конкретного модуля
-     * @returns {Promise}
-     */
-    getModule: function() {
-
-        var promise = vow.promise();
-
-        this.getModules().then(function(modules) {
-            promise.fulfill(this.modules = modules.splice(0, this.getModuleIndex(this.options.module) + 1));
         }.bind(this)).done();
 
         return promise;
@@ -266,31 +310,83 @@ Maker.prototype = {
     convertToClosure: function() {
 
         var length = this.modules.length,
+            cleaned = [],
             closure = ['(function(global, undefined) {\nvar '];
 
         this.modules.forEach(function(module, index) {
-            closure.push(module.name);
-            closure.push(' = (');
-            closure.push(module.body);
-            closure.push(').call(global');
 
-            var deps = module.deps.join(', ');
-            deps.length && closure.push(', ');
-            closure.push(deps);
+            var method = this.isClean(module)
+                ? (cleaned.push(module.name), 'convertCleanModule')
+                : 'convertDefaultModule';
 
-            closure.push(')');
+            closure = closure.concat(this[method](module));
 
             index + 1 < length
                 ? closure.push(',')
                 : closure.push(';');
 
             closure.push('\n');
-        });
+        }, this);
+
+        if(cleaned.length) {
+            closure = closure.concat([
+                JSON.stringify(cleaned),
+                '.forEach(function(g) { delete global[g]; });\n'
+            ]);
+        }
 
         closure.push('})(this);');
 
         // Если был добавлен хотя бы один модуль
         return this.closure = closure.length > 2 ? closure.join('') : '';
+    },
+
+    /**
+     * Сформировать строку для обычного модуля
+     * @private
+     * @param {Object} module Информация о модуле
+     * @returns {Array}
+     */
+    convertDefaultModule: function(module) {
+
+        var closure = [
+                module.name,
+                ' = (',
+                module.body,
+                ').call(global'
+            ];
+
+        if(module.deps.length) {
+            closure.push(', ', module.deps.join(', '));
+        }
+
+        closure.push(')');
+
+        return closure;
+    },
+
+    /**
+     * Сформировать строку для очищенного модуля
+     * @private
+     * @param {Object} module Информация о модуле
+     * @returns {Array}
+     */
+    convertCleanModule: function(module) {
+        return [
+            module.name,
+            ' = global.',
+            module.name
+        ];
+    },
+
+    /**
+     * Является ли модуль очищенным
+     * @private
+     * @param {Object} module Информация о модуле
+     * @returns {boolean}
+     */
+    isClean: function(module) {
+        return !!module.clean;
     },
 
     /**
@@ -301,7 +397,7 @@ Maker.prototype = {
      */
     sortModules: function(modules) {
 
-        for(var name in modules) if(modules.hasOwnProperty(name)) {
+        Object.keys(modules).forEach(function(name) {
 
             var info = modules[name],
                 dependencies = info.dependencies;
@@ -310,18 +406,19 @@ Maker.prototype = {
 
                 dependencies.forEach(function(dependency) {
                     this.addModule('push', dependency, modules[dependency]);
-                }.bind(this));
+                }, this);
 
                 this.addModule('push', name, info);
 
             } else {
 
                 dependencies.forEach(function(dependency) {
-                    this.moveBefore(name, dependency, info);
-                }.bind(this));
+                    this.moveBefore(name, dependency, modules[dependency]);
+                }, this);
 
             }
-        }
+
+        }, this);
 
         return this.modules;
     },
@@ -345,7 +442,8 @@ Maker.prototype = {
         this.modules[method]({
             name: name,
             deps: info.dependencies,
-            body: info.body
+            body: info.body,
+            clean: info.clean
         });
 
         this.sortedModuleNames.push(name);
