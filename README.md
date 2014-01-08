@@ -20,16 +20,16 @@ Definer предназначен для удобной разработки. С 
 Пусть есть модули `a` и `b`, и модуль `c`, зависящий от них.
 
 ```javascript
-var a = define('a', function() { return 'a'; }); // a
-var b = define('b', function() { return 'b'; }); // b
-var c = define('c', function(a, b) { return a + b + 'c'; }); //abc
+var a = definer('a', function() { return 'a'; }); // a
+var b = definer('b', function() { return 'b'; }); // b
+var c = definer('c', function(a, b) { return a + b + 'c'; }); //abc
 ```
 
 Модули должны быть объявлены в правильной последовательности, иначе возникнет ошибка.
 
 ```javascript
-define('b', function(a) {}); // ReferenceError: module a is not defined
-define('a', function() {});
+definer('b', function(a) {}); // ReferenceError: module a is not defined
+definer('a', function() {});
 ```
 
 ### Экспорт в глобальный контекст
@@ -37,7 +37,7 @@ define('a', function() {});
 Внутри модулей `this` указывает на глобальный контекст. Используя это, модуль может легко экспортировать данные.
 
 ```javascript
-define('d', function() { this.d = 'd'; }); // Появилась глобальная переменная d
+definer('d', function() { this.d = 'd'; }); // Появилась глобальная переменная d
 ```
 
 ### Сборка
@@ -58,7 +58,7 @@ modules/
 В процессе сборки definer выполнит рекурсивный поиск модулей в файлах `*.js` текущей директории и собранный результат будет сохранён в файл `all.js`:
 
 ```javascript
-(function(global) {
+(function(global, undefined) {
 var a = (function () { return 'a'; }).call(global),
     b = (function () { return 'b'; }).call(global),
     c = (function (a, b) { return a + b + 'c'; }).call(global, a, b);

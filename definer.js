@@ -21,6 +21,26 @@
      */
     Definer.pool = {};
 
+    /**
+     * Перевести свойства из глобального контекста в модули
+     * @param {String|String[]} modules Имя свойства или массив имён
+     * @returns {Definer}
+     */
+    Definer.clean = function(modules) {
+        if(!Array.isArray(modules)) {
+            modules = [modules];
+        }
+
+        modules.forEach(function(module) {
+            if(!global[module]) return;
+
+            new Definer(module, global[module]).clean();
+            delete global[module];
+        });
+
+        return this;
+    };
+
     Definer.prototype = {
 
         /**
@@ -81,6 +101,16 @@
          */
         define: function() {
             return Definer.pool[this.name].export = this.body.apply(global, this.getDependencies());
+        },
+
+        /**
+         * Обозначить модуль глобальным
+         * @returns {*}
+         */
+        clean: function() {
+            var module = Definer.pool[this.name];
+            module.clean = true;
+            return module.export = this.body;
         }
 
     };
@@ -91,8 +121,23 @@
      * @param {Function} body Тело модуля
      * @returns {*}
      */
-    global.define = function(name, body) {
+    global.definer = function(name, body) {
         return new Definer(name, body).define();
+    };
+
+    /**
+     * Перевести свойства из глобального контекста в модули
+     * @param {String|String[]} modules Имя свойства или массив имён
+     * @returns {Definer}
+     */
+    global.definer.clean = Definer.clean;
+
+    /**
+     * Получить список всех объявленных модулей
+     * @returns {Object}
+     */
+    global.definer.getModules = function() {
+        return Definer.pool;
     };
 
 })(this);
