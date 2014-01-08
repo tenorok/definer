@@ -8,8 +8,7 @@ var fs = require('fs'),
 
     context = vm.createContext({
         $: function() { return 'jQuery'; },
-        _: function() { return 'underscore'; },
-        console: console
+        _: function() { return 'underscore'; }
     });
 
 vm.runInContext(file, context);
