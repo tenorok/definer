@@ -109,7 +109,7 @@
          */
         clean: function() {
             var module = Definer.pool[this.name];
-            module.global = true;
+            module.clean = true;
             return module.export = this.body;
         }
 
