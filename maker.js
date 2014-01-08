@@ -172,15 +172,30 @@ Maker.prototype = {
 
         var modules = {};
 
+        var definer = function(name, body) {
+            modules[name] = {
+                dependencies: this.getArguments(body),
+                body: body
+            };
+            this.console.log('Include', [filePath, '\n         Module:', name]);
+        }.bind(this);
+
+        definer.clean = function(globals) {
+            if(!Array.isArray(globals)) {
+                globals = [globals];
+            }
+
+            globals.forEach(function(name) {
+                modules[name] = {
+                    dependencies: [],
+                    clean: true
+                };
+            });
+        };
+
         try {
             vm.runInNewContext(fileContent, {
-                definer: function(name, body) {
-                    modules[name] = {
-                        dependencies: this.getArguments(body),
-                        body: body
-                    };
-                    this.console.log('Include', [filePath, '\n         Module:', name]);
-                }.bind(this)
+                definer: definer
             });
         } catch(e) {
             this.console.warn('Skipped', [filePath, '\n         ' + e]);
@@ -223,7 +238,7 @@ Maker.prototype = {
                         promise.fulfill(modules);
                     }
                 }.bind(this)).done();
-            }.bind(this));
+            }, this);
         }.bind(this)).done();
 
         return promise;
