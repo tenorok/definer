@@ -30,6 +30,13 @@ function Maker(options) {
     this.sortedModuleNames = [];
 
     /**
+     * Модули для собираемого модуля
+     * @private
+     * @type {Object}
+     */
+    this.modulesToModule = {};
+
+    /**
      * Строка замыкания из отсортированного списка модулей
      * @private
      * @type {String}
@@ -73,10 +80,9 @@ Maker.prototype = {
 
         this.saveFilePath = filePath;
 
-        var promise = vow.promise(),
-            method = this.options.module ? 'getModule' : 'getModules';
+        var promise = vow.promise();
 
-        this[method]().then(function() {
+        this.getModules().then(function() {
             this.convertToClosure();
             this.saveClosureToFile().then(function(saved) {
                 promise.fulfill(saved);
@@ -245,30 +251,52 @@ Maker.prototype = {
     },
 
     /**
-     * Получить отсортированные по зависимостям модули
+     * Получить все модули для собираемого модуля
+     * @private
      * @returns {Promise}
      */
-    getModules: function() {
+    getModuleListToModule: function() {
 
-        var promise = vow.promise();
+        var promise = vow.promise(),
+            target = this.options.module;
 
         this.getModuleList().then(function(modules) {
-            promise.fulfill(this.sortModules(modules));
+            var modulesToTarget = this.getModulesByDependencies(target, modules);
+            modulesToTarget[target] = modules[target];
+            promise.fulfill(modulesToTarget);
         }.bind(this)).done();
 
         return promise;
     },
 
     /**
-     * Получить отсортированные модули для конкретного модуля
+     * Получить список модулей по зависимостям
+     * @private
+     * @param {String} name Имя модуля
+     * @param {Object} modules Все модули
+     * @returns {Object}
+     */
+    getModulesByDependencies: function(name, modules) {
+
+        modules[name].dependencies.forEach(function(dependency) {
+            this.modulesToModule[dependency] = modules[dependency];
+            this.getModulesByDependencies(dependency, modules);
+        }, this);
+
+        return this.modulesToModule;
+    },
+
+    /**
+     * Получить отсортированные по зависимостям модули
      * @returns {Promise}
      */
-    getModule: function() {
+    getModules: function() {
 
-        var promise = vow.promise();
+        var promise = vow.promise(),
+            method = this.options.module ? 'getModuleListToModule' : 'getModuleList';
 
-        this.getModules().then(function(modules) {
-            promise.fulfill(this.modules = modules.splice(0, this.getModuleIndex(this.options.module) + 1));
+        this[method]().then(function(modules) {
+            promise.fulfill(this.sortModules(modules));
         }.bind(this)).done();
 
         return promise;
@@ -314,6 +342,7 @@ Maker.prototype = {
 
     /**
      * Сформировать строку для обычного модуля
+     * @private
      * @param {Object} module Информация о модуле
      * @returns {Array}
      */
@@ -337,6 +366,7 @@ Maker.prototype = {
 
     /**
      * Сформировать строку для очищенного модуля
+     * @private
      * @param {Object} module Информация о модуле
      * @returns {Array}
      */
@@ -350,6 +380,7 @@ Maker.prototype = {
 
     /**
      * Является ли модуль очищенным
+     * @private
      * @param {Object} module Информация о модуле
      * @returns {boolean}
      */
