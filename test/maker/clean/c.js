@@ -1,1 +1,1 @@
-definer('c', function() { return 'c'; });
+definer('c', function($) { return 'c'; });

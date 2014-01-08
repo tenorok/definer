@@ -10,20 +10,37 @@ describe('Тестирование сборки с глобальными пер
     var savePromise = vow.promise(),
         saveFilePath = path.join(__dirname, 'clean/all.js');
 
-    it('Сборка', function(done) {
+    it('Сборка всех модулей', function(done) {
 
         new Maker({
             directory: path.join(__dirname, 'clean'),
             verbose: ['error']
         }).make(saveFilePath).then(function() {
 
-                fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {
-                    assert.equal(data, helper.getClosureStringClean());
-                    savePromise.fulfill();
-                });
+            fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {
+                assert.equal(data, helper.getClosureStringClean());
+                savePromise.fulfill();
+            });
 
-                done();
-            }).done();
+            done();
+        }).done();
+    });
+
+    it('Сборка модуля C', function(done) {
+
+        new Maker({
+            directory: path.join(__dirname, 'clean'),
+            module: 'c',
+            verbose: ['error']
+        }).make(saveFilePath).then(function() {
+
+            fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {
+                assert.equal(data, helper.getClosureStringCleanModuleC());
+                savePromise.fulfill();
+            });
+
+            done();
+        }).done();
     });
 
     after(function(done) {
