@@ -174,7 +174,7 @@ Maker.prototype = {
 
         try {
             vm.runInNewContext(fileContent, {
-                define: function(name, body) {
+                definer: function(name, body) {
                     modules[name] = {
                         dependencies: this.getArguments(body),
                         body: body

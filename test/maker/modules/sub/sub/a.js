@@ -1,4 +1,4 @@
-define(
+definer(
     "a"
     ,function() { return 'a'; }
 );

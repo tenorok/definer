@@ -1,2 +1,2 @@
-define('e', function(d) { return d + 'e'; });
-define('f', function() { return 'f'; });
+definer('e', function(d) { return d + 'e'; });
+definer('f', function() { return 'f'; });
