@@ -196,8 +196,9 @@ Maker.prototype = {
                     dependencies: [],
                     clean: true
                 };
-            });
-        };
+                this.console.log('Clean', [filePath, '\n       Module:', name]);
+            }, this);
+        }.bind(this);
 
         try {
             vm.runInNewContext(fileContent, {
