@@ -281,31 +281,80 @@ Maker.prototype = {
     convertToClosure: function() {
 
         var length = this.modules.length,
+            cleaned = [],
             closure = ['(function(global, undefined) {\nvar '];
 
         this.modules.forEach(function(module, index) {
-            closure.push(module.name);
-            closure.push(' = (');
-            closure.push(module.body);
-            closure.push(').call(global');
 
-            var deps = module.deps.join(', ');
-            deps.length && closure.push(', ');
-            closure.push(deps);
+            var method = this.isClean(module)
+                ? (cleaned.push(module.name), 'convertCleanModule')
+                : 'convertDefaultModule';
 
-            closure.push(')');
+            closure = closure.concat(this[method](module));
 
             index + 1 < length
                 ? closure.push(',')
                 : closure.push(';');
 
             closure.push('\n');
-        });
+        }, this);
+
+        if(cleaned.length) {
+            closure = closure.concat([
+                JSON.stringify(cleaned),
+                '.forEach(function(g) { delete global[g]; });\n'
+            ]);
+        }
 
         closure.push('})(this);');
 
         // Если был добавлен хотя бы один модуль
         return this.closure = closure.length > 2 ? closure.join('') : '';
+    },
+
+    /**
+     * Сформировать строку для обычного модуля
+     * @param {Object} module Информация о модуле
+     * @returns {Array}
+     */
+    convertDefaultModule: function(module) {
+
+        var closure = [
+                module.name,
+                ' = (',
+                module.body,
+                ').call(global'
+            ];
+
+        if(module.deps.length) {
+            closure.push(', ', module.deps.join(', '));
+        }
+
+        closure.push(')');
+
+        return closure;
+    },
+
+    /**
+     * Сформировать строку для очищенного модуля
+     * @param {Object} module Информация о модуле
+     * @returns {Array}
+     */
+    convertCleanModule: function(module) {
+        return [
+            module.name,
+            ' = global.',
+            module.name
+        ];
+    },
+
+    /**
+     * Является ли модуль очищенным
+     * @param {Object} module Информация о модуле
+     * @returns {boolean}
+     */
+    isClean: function(module) {
+        return !!module.clean;
     },
 
     /**
@@ -316,7 +365,7 @@ Maker.prototype = {
      */
     sortModules: function(modules) {
 
-        for(var name in modules) if(modules.hasOwnProperty(name)) {
+        Object.keys(modules).forEach(function(name) {
 
             var info = modules[name],
                 dependencies = info.dependencies;
@@ -325,18 +374,19 @@ Maker.prototype = {
 
                 dependencies.forEach(function(dependency) {
                     this.addModule('push', dependency, modules[dependency]);
-                }.bind(this));
+                }, this);
 
                 this.addModule('push', name, info);
 
             } else {
 
                 dependencies.forEach(function(dependency) {
-                    this.moveBefore(name, dependency, info);
-                }.bind(this));
+                    this.moveBefore(name, dependency, modules[dependency]);
+                }, this);
 
             }
-        }
+
+        }, this);
 
         return this.modules;
     },
@@ -360,7 +410,8 @@ Maker.prototype = {
         this.modules[method]({
             name: name,
             deps: info.dependencies,
-            body: info.body
+            body: info.body,
+            clean: info.clean
         });
 
         this.sortedModuleNames.push(name);
