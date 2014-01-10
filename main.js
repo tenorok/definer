@@ -1,4 +1,4 @@
 module.exports = {
-    define: require('./definer').define,
+    definer: require('./definer').definer,
     Maker: require('./maker')
 };

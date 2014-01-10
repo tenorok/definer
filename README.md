@@ -22,7 +22,7 @@ Definer предназначен для удобной разработки. С 
 ```javascript
 var a = definer('a', function() { return 'a'; }); // a
 var b = definer('b', function() { return 'b'; }); // b
-var c = definer('c', function(a, b) { return a + b + 'c'; }); //abc
+var c = definer('c', function(a, b) { return a + b + 'c'; }); // abc
 ```
 
 Модули должны быть объявлены в правильной последовательности, иначе возникнет ошибка.
@@ -111,3 +111,36 @@ var a = (function () { return 'a'; }).call(global),
     ./node_modules/.bin/definer -v we all.js
 
 По умолчанию выводятся все типы информации.
+
+### Методы
+
+#### Метод `clean`
+
+В качестве параметра метод `clean` принимает имя глобальной переменной или массив имён.
+
+Указанные переменные удалятся из глобального контекста и будут объявлены одноимённые модули.
+
+Например, скроем jQuery в модуль:
+
+```javascript
+definer.clean('$');
+console.log($); // undefined
+definer('a', function($) { $('html').text('a'); });
+```
+
+Очистка сразу нескольких переменных:
+
+```javascript
+definer.clean(['$', '_']);
+```
+
+Результат сборки всех модулей будет выглядеть примерно так:
+
+```javascript
+(function(global, undefined) {
+var $ = global.$,
+    _ = global._,
+    a = (function ($) { $('html').text('a'); }).call(global, $);
+['$', '_'].forEach(function(g) { delete global[g]; });
+})(this);
+```
