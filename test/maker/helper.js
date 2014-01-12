@@ -1,5 +1,6 @@
 const exec = require('child_process').exec,
     fs = require('fs'),
+    path = require('path'),
 
     assert = require('chai').assert,
     vow = require('vow'),
@@ -71,6 +72,11 @@ function testCLI(bin) {
 
 testCLI.prototype = {
 
+    setBin: function(bin) {
+        this.bin = bin;
+        return this;
+    },
+
     setTarget: function(target) {
         this.target = target;
         return this;
@@ -87,18 +93,43 @@ testCLI.prototype = {
             .then(function(savedFileContent) {
                 assert.equal(savedFileContent, standard);
                 promise.fulfill();
-                done();
+                done && done();
             })
             .done();
 
         return this.execPromise = promise;
     },
 
-    unlinkAfterExec: function(done) {
-        vow.all([this.execPromise, binding.unlink(this.target)]).then(function() {
+    unlinkAfterExec: function(done, base) {
+        vow.all([
+            this.execPromise,
+            binding.unlink(path.join(base || '', this.target))
+        ]).then(function() {
             this.execPromise = undefined;
+            done && done();
+        }.bind(this));
+    },
+
+    changeCWD: function(newCWD, options, callback, done) {
+
+        var cwd = process.cwd(),
+            bin = this.bin,
+            target = this.target;
+
+        process.chdir(newCWD);
+
+        if(options.bin) this.bin = options.bin;
+        if(options.target) this.target = options.target;
+
+        callback.call(this).then(function() {
+            this.unlinkAfterExec(undefined, newCWD);
+            process.chdir(cwd);
+            this.bin = bin;
+            this.target = target;
             done();
         }.bind(this));
+
+        return this;
     }
 
 };
