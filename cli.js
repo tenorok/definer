@@ -1,16 +1,20 @@
 const path = require('path'),
+    fs = require('fs'),
+
     commander = require('commander'),
+    _ = require('underscore'),
 
     Maker = require('./maker'),
     Logger = require('./logger');
 
 commander
-    .version('0.0.1')
+    .version('0.0.2')
     .usage('[options] <file>')
     .option('-d, --directory <path>', 'start directory path', '.')
     .option('-m, --module <name>', 'target module name')
     .option('-p, --postfix <postfix>', 'postfix to find files')
     .option('-v, --verbose <modes>', 'l - log, i - info, w - warn, e - error', function(modes) { return modes.split(''); })
+    .option('-c, --config <file>', 'json format config', 'definer.json')
     .parse(process.argv);
 
 /**
@@ -21,12 +25,12 @@ function Cli(filePath, options) {
 
     this.saveFilePath = this.getAbsolutePath(filePath);
 
-    this.options = {
+    this.options = _.extend(this.getConfig(options.config), this.cleanObject({
         directory: this.getAbsolutePath(options.directory),
         module: options.module,
         postfix: options.postfix,
         verbose: this.resolveVerboseTypes(options.verbose || [])
-    };
+    }));
 
     this.console = new Logger(this.options.verbose);
 }
@@ -46,6 +50,31 @@ Cli.prototype = {
      */
     getAbsolutePath: function(relativePath) {
         return path.join(this.cwd, relativePath);
+    },
+
+    /**
+     * Удалить из объекта все неопределённые поля
+     * @param {Object} object Объект
+     * @returns {Object}
+     */
+    cleanObject: function(object) {
+        Object.keys(object).forEach(function(key) {
+            if(!_.isUndefined(object[key])) return;
+            delete object[key];
+        });
+        return object;
+    },
+
+    /**
+     * Получить конфигурационный объект из файла
+     * @param {String} file Относительный путь до файла
+     * @returns {Object}
+     */
+    getConfig: function(file) {
+        var fullPath = path.join(this.cwd, file);
+        return fs.existsSync(fullPath)
+            ? JSON.parse(fs.readFileSync(fullPath, { encoding: 'UTF-8' }))
+            : {};
     },
 
     /**
@@ -97,6 +126,7 @@ module.exports.run = function() {
         directory: commander.directory,
         module: commander.module,
         postfix: commander.postfix,
-        verbose: commander.verbose
+        verbose: commander.verbose,
+        config: commander.config
     }).run();
 };
