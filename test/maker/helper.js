@@ -1,8 +1,11 @@
 const exec = require('child_process').exec,
     fs = require('fs'),
-    vow = require('vow');
 
-module.exports = {
+    assert = require('chai').assert,
+    vow = require('vow'),
+    _ = require('underscore');
+
+var binding = {
 
     exec: function(command) {
 
@@ -58,7 +61,49 @@ module.exports = {
 
                 return promise;
             });
+    }
+
+};
+
+function testCLI(bin) {
+    this.bin = bin;
+}
+
+testCLI.prototype = {
+
+    setTarget: function(target) {
+        this.target = target;
+        return this;
     },
+
+    exec: function(options, standard, done) {
+
+        var promise = vow.promise();
+
+        binding.exec([this.bin, options, this.target].join(' '))
+            .then(function() {
+                return binding.readFile(this.target);
+            }.bind(this))
+            .then(function(savedFileContent) {
+                assert.equal(savedFileContent, standard);
+                promise.fulfill();
+                done();
+            })
+            .done();
+
+        return this.execPromise = promise;
+    },
+
+    unlinkAfterExec: function(done) {
+        vow.all([this.execPromise, binding.unlink(this.target)]).then(function() {
+            this.execPromise = undefined;
+            done();
+        }.bind(this));
+    }
+
+};
+
+var closure = {
 
     getClosureString: function() {
         return '(function(global, undefined) {\n' +
@@ -76,7 +121,7 @@ module.exports = {
             '    }).call(global, a, b, c),\n' +
             'e = (function (d) { return d + \'e\'; }).call(global, d),\n' +
             'f = (function () { return \'f\'; }).call(global);\n' +
-        '})(this);';
+            '})(this);';
     },
 
     getClosureStringModuleC: function() {
@@ -109,3 +154,5 @@ module.exports = {
     }
 
 };
+
+module.exports = _.extend({ testCLI: testCLI }, binding, closure);
