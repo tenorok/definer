@@ -87,12 +87,13 @@ testCLI.prototype = {
         var promise = vow.promise();
 
         binding.exec([this.bin, options, this.target].join(' '))
-            .then(function() {
-                return binding.readFile(this.target);
+            .then(function(stdout) {
+                console.log(stdout);
+                return vow.all([stdout, binding.readFile(this.target)]);
             }.bind(this))
-            .then(function(savedFileContent) {
+            .spread(function(stdout, savedFileContent) {
                 assert.equal(savedFileContent, standard);
-                promise.fulfill();
+                promise.fulfill(stdout);
                 done && done();
             })
             .done();
@@ -178,6 +179,32 @@ var closure = {
 
     getClosureStringCleanModuleC: function() {
         return '(function(global, undefined) {\n' +
+            'var $ = global.$,\n' +
+            'c = (function ($) { return \'c\'; }).call(global, $);\n' +
+            '["$"].forEach(function(g) { delete global[g]; });\n' +
+            '})(this);';
+    },
+
+    getClosureStringMakeCleanFiles: function() {
+        return 'var _ = function() { return \'underscore\'; };\n' +
+            'var $ = function() { return \'jquery\'; };\n' +
+            '$.ui = function() { return \'jquery.ui\'; };\n' +
+            '$.plugin = function() { return \'jquery.plugin\'; };' +
+            '(function(global, undefined) {\n' +
+            'var _ = global._,\n' +
+            '$ = global.$,\n' +
+            'b = (function ($, _) { return \'b\'; }).call(global, $, _),\n' +
+            'c = (function ($) { return \'c\'; }).call(global, $),\n' +
+            'a = (function (b, c) { return \'a\' + b + c; }).call(global, b, c);\n' +
+            '["_","$"].forEach(function(g) { delete global[g]; });\n' +
+            '})(this);';
+    },
+
+    getClosureStringMakeCleanFilesModuleC: function() {
+        return 'var $ = function() { return \'jquery\'; };\n' +
+            '$.ui = function() { return \'jquery.ui\'; };\n' +
+            '$.plugin = function() { return \'jquery.plugin\'; };' +
+            '(function(global, undefined) {\n' +
             'var $ = global.$,\n' +
             'c = (function ($) { return \'c\'; }).call(global, $);\n' +
             '["$"].forEach(function(g) { delete global[g]; });\n' +
