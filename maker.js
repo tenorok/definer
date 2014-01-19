@@ -23,6 +23,13 @@ function Maker(options) {
     this.modules = [];
 
     /**
+     * Содержимое файлов очищенных модулей
+     * @private
+     * @type {String[]}
+     */
+    this.clean = [];
+
+    /**
      * Имена добавленных в отсортированный массив модулей
      * @private
      * @type {String[]}
@@ -52,13 +59,14 @@ function Maker(options) {
 
     /**
      * Опции сборки
-     * @type {{directory: String, module: String|boolean, postfix: String, verbose: Array}}
+     * @type {{directory: String, module: String|boolean, postfix: String, verbose: Array, clean: Object}}
      */
     this.options = _.defaults(options || {}, {
         directory: '.',
         module: false,
         postfix: 'js',
-        verbose: []
+        verbose: [],
+        clean: {}
     });
 
     /**
@@ -82,12 +90,14 @@ Maker.prototype = {
 
         var promise = vow.promise();
 
-        this.getModules().then(function() {
-            this.convertToClosure();
-            this.saveClosureToFile().then(function(saved) {
-                promise.fulfill(saved);
-            }).done();
-        }.bind(this)).done();
+        this.getModules()
+            .then(this.getCleanFiles.bind(this))
+            .then(function() {
+                this.convertToClosure();
+                this.saveClosureToFile().then(function(saved) {
+                    promise.fulfill(saved);
+                }).done();
+            }.bind(this)).done();
 
         return promise;
     },
@@ -159,7 +169,7 @@ Maker.prototype = {
      * Открыть список файлов
      * @private
      * @param {String[]} filesPath Пути до файлов
-     * @param {Maker~openFilesCallback} callback Колбек вызывается для каждого файла
+     * @param {Maker~openFilesCallback} [callback] Колбек вызывается для каждого файла
      * @returns {Promise}
      */
     openFiles: function(filesPath, callback) {
@@ -184,7 +194,7 @@ Maker.prototype = {
      * Открыть список файлов с сохранением порядка
      * @private
      * @param {String[]} filesPath Пути до файлов
-     * @param {Maker~openFilesCallback} callback Колбек вызывается для каждого файла
+     * @param {Maker~openFilesCallback} [callback] Колбек вызывается для каждого файла
      * @returns {Promise}
      */
     openFilesByOrder: function(filesPath, callback) {
@@ -365,6 +375,51 @@ Maker.prototype = {
     },
 
     /**
+     * Получить содержимое всех файлов всех очищенных модулей
+     * @private
+     * @returns {Promise}
+     */
+    getCleanFiles: function() {
+
+        var promises = [];
+
+        this.getCleanModules().forEach(function(module) {
+            var promise = this.openCleanFiles(module.name);
+            promises.push(promise);
+            promise.then(function(filesContent) {
+                this.clean.push(filesContent);
+            }.bind(this)).done();
+        }, this);
+
+        return vow.all(promises);
+    },
+
+    /**
+     * Открыть все файлы указанного очищенного модуля
+     * @private
+     * @param {String} module Имя модуля
+     * @returns {Promise}
+     */
+    openCleanFiles: function(module) {
+
+        var promise = vow.promise();
+
+        if(!this.options.clean.hasOwnProperty(module)) {
+            promise.fulfill('');
+            return promise;
+        }
+
+        var moduleFiles = this.options.clean[module],
+            files = Array.isArray(moduleFiles) ? moduleFiles : [moduleFiles];
+
+        this.openFilesByOrder(files).then(function(filesContent) {
+            promise.fulfill(filesContent.join('\n'));
+        });
+
+        return promise;
+    },
+
+    /**
      * Сформировать строку замыкания из отсортированного списка модулей
      * @returns {String}
      */
@@ -372,7 +427,7 @@ Maker.prototype = {
 
         var length = this.modules.length,
             cleaned = [],
-            closure = ['(function(global, undefined) {\nvar '];
+            closure = [this.clean.join('\n'), '\n', '(function(global, undefined) {\nvar '];
 
         this.modules.forEach(function(module, index) {
 
@@ -448,6 +503,17 @@ Maker.prototype = {
      */
     isClean: function(module) {
         return !!module.clean;
+    },
+
+    /**
+     * Получить список очищенных модулей
+     * @private
+     * @returns {Object[]}
+     */
+    getCleanModules: function() {
+        return this.modules.filter(function(module) {
+            return this.isClean(module);
+        }, this);
     },
 
     /**
