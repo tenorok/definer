@@ -148,6 +148,67 @@ Maker.prototype = {
     },
 
     /**
+     * Колбек вызывается для каждого открытого файла в методе openFiles
+     * @private
+     * @callback Maker~openFilesCallback
+     * @param {String} file Путь до файла
+     * @param {String} data Содержимое файла
+     */
+
+    /**
+     * Открыть список файлов
+     * @private
+     * @param {String[]} filesPath Пути до файлов
+     * @param {Maker~openFilesCallback} callback Колбек вызывается для каждого файла
+     * @returns {Promise}
+     */
+    openFiles: function(filesPath, callback) {
+
+        var promises = [];
+
+        filesPath.forEach(function(file) {
+
+            var filePromise = this.openFile(file);
+            promises.push(filePromise);
+
+            filePromise.then(function(data) {
+                callback && callback.call(this, file, data);
+            }.bind(this)).done();
+
+        }, this);
+
+        return vow.all(promises);
+    },
+
+    /**
+     * Открыть список файлов с сохранением порядка
+     * @private
+     * @param {String[]} filesPath Пути до файлов
+     * @param {Maker~openFilesCallback} callback Колбек вызывается для каждого файла
+     * @returns {Promise}
+     */
+    openFilesByOrder: function(filesPath, callback) {
+
+        var promise = vow.promise(),
+            filesContent = {};
+
+        this
+            .openFiles(filesPath, function(file, data) {
+                filesContent[file] = data;
+                callback && callback.call(this, file, data);
+            })
+            .then(function() {
+                var filesByOrder = [];
+                filesPath.forEach(function(file) {
+                    filesByOrder.push(filesContent[file]);
+                });
+                promise.fulfill(filesByOrder);
+            });
+
+        return promise;
+    },
+
+    /**
      * Сохранить строку замыкания в файл
      * @private
      * @returns {Promise}
