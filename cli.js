@@ -39,12 +39,14 @@ Cli.prototype = {
 
     /**
      * Current working directory
+     * @private
      * @type {String}
      */
     cwd: process.cwd(),
 
     /**
      * Получить абсолютный путь из отностильного
+     * @private
      * @param {String} relativePath Относительный путь
      * @returns {String}
      */
@@ -54,6 +56,7 @@ Cli.prototype = {
 
     /**
      * Удалить из объекта все неопределённые поля
+     * @private
      * @param {Object} object Объект
      * @returns {Object}
      */
@@ -67,18 +70,36 @@ Cli.prototype = {
 
     /**
      * Получить конфигурационный объект из файла
+     * @private
      * @param {String} file Относительный путь до файла
      * @returns {Object}
      */
     getConfig: function(file) {
-        var fullPath = path.join(this.cwd, file);
-        return fs.existsSync(fullPath)
-            ? JSON.parse(fs.readFileSync(fullPath, { encoding: 'UTF-8' }))
-            : {};
+        var fullPath = path.join(this.cwd, file),
+            config = fs.existsSync(fullPath)
+                ? JSON.parse(fs.readFileSync(fullPath, { encoding: 'UTF-8' }))
+                : {};
+
+        if(!config.hasOwnProperty('clean')) return config;
+
+        Object.keys(config.clean).forEach(function(module) {
+            var moduleFiles = config.clean[module],
+                files = Array.isArray(moduleFiles) ? moduleFiles : [moduleFiles],
+                filesFullPath = [];
+
+            files.forEach(function(file) {
+                filesFullPath.push(path.join(path.dirname(fullPath), file));
+            });
+
+            config.clean[module] = filesFullPath;
+        });
+
+        return config;
     },
 
     /**
      * Соответствие сокращённых и полных имён типов сообщений
+     * @private
      * @type {Object}
      */
     verboseAliases: {
@@ -90,6 +111,7 @@ Cli.prototype = {
 
     /**
      * Развернуть сокращённые типы сообщений в полные
+     * @private
      * @param {String[]} verbose Сокращённые типы сообщений
      * @returns {String[]}
      */
@@ -107,7 +129,8 @@ Cli.prototype = {
             directory: this.options.directory,
             module: this.options.module,
             postfix: this.options.postfix,
-            verbose: this.options.verbose
+            verbose: this.options.verbose,
+            clean: this.options.clean
         }).make(this.saveFilePath).then(function(saved) {
             saved
                 ? this.console.info('Saved', [this.saveFilePath])
