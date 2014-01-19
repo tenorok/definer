@@ -387,6 +387,7 @@ Maker.prototype = {
             var promise = this.openCleanFiles(module.name);
             promises.push(promise);
             promise.then(function(filesContent) {
+                if(!filesContent) return;
                 this.clean.push(filesContent);
             }.bind(this)).done();
         }, this);
@@ -427,7 +428,7 @@ Maker.prototype = {
 
         var length = this.modules.length,
             cleaned = [],
-            closure = [this.clean.join('\n'), '\n', '(function(global, undefined) {\nvar '];
+            closure = [this.clean.join('\n'), '(function(global, undefined) {\nvar '];
 
         this.modules.forEach(function(module, index) {
 
