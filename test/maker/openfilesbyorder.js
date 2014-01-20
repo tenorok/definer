@@ -49,7 +49,7 @@ describe('Тестирование метода openFilesByOrder.', function() {
                 filesData[file] = data;
             })
             .then(function() {
-                assert.deepEqual(Object.keys(filesData), getFileList());
+                assert.deepEqual(Object.keys(filesData).sort(), getFileList().sort());
                 done();
             }).done();
     });
