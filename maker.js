@@ -309,14 +309,12 @@ Maker.prototype = {
                 return promise.fulfill({});
             }
 
-            fileList.forEach(function(filePath, index) {
-                this.openFile(filePath).then(function(fileContent) {
-                    modules = _.extend(modules, this.getFileModules(filePath, fileContent));
-                    if(index + 1 >= fileList.length) { // Если последний файл
-                        promise.fulfill(modules);
-                    }
-                }.bind(this)).done();
-            }, this);
+            this.openFiles(fileList, function(file, data) {
+                modules = _.extend(modules, this.getFileModules(file, data));
+            }).then(function() {
+                promise.fulfill(modules);
+            }).done();
+
         }.bind(this)).done();
 
         return promise;
