@@ -151,9 +151,9 @@ Maker.prototype = {
     openFile: function(filePath) {
         var promise = vow.promise();
         fs.readFile(filePath, { encoding: 'UTF-8' }, function(err, data) {
-            if(err) return promise.reject(err);
-            promise.fulfill(data);
-        });
+            if(err) this.console.error('Missed', [filePath]);
+            promise.fulfill(data || '');
+        }.bind(this));
         return promise;
     },
 
