@@ -88,7 +88,7 @@ Logger.prototype = {
         if(!this.isAccessMode(type)) return;
 
         // Если заголовок не передан
-        if(_.isArray(title)) {
+        if(Array.isArray(title)) {
             message = title;
             title = type.charAt(0).toUpperCase() + type.slice(1);
         }

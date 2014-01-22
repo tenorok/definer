@@ -5,7 +5,9 @@ const path = require('path'),
     _ = require('underscore'),
 
     Maker = require('./maker'),
-    Logger = require('./logger');
+    Logger = require('./logger'),
+
+    defaultConfigFile = 'definer.json';
 
 commander
     .version('0.0.2')
@@ -14,7 +16,7 @@ commander
     .option('-m, --module <name>', 'target module name')
     .option('-p, --postfix <postfix>', 'postfix to find files')
     .option('-v, --verbose <modes>', 'l - log, i - info, w - warn, e - error', function(modes) { return modes.split(''); })
-    .option('-c, --config <file>', 'json format config', 'definer.json')
+    .option('-c, --config <file>', 'json format config', defaultConfigFile)
     .parse(process.argv);
 
 /**
@@ -23,16 +25,17 @@ commander
  */
 function Cli(filePath, options) {
 
+    var verbose = this.resolveVerboseTypes(options.verbose || []);
+    this.console = new Logger(verbose);
+
     this.saveFilePath = this.getAbsolutePath(filePath);
 
     this.options = _.extend(this.getConfig(options.config), this.cleanObject({
         directory: this.getAbsolutePath(options.directory),
         module: options.module,
         postfix: options.postfix,
-        verbose: this.resolveVerboseTypes(options.verbose || [])
+        verbose: verbose
     }));
-
-    this.console = new Logger(this.options.verbose);
 }
 
 Cli.prototype = {
@@ -76,9 +79,15 @@ Cli.prototype = {
      */
     getConfig: function(file) {
         var fullPath = path.join(this.cwd, file),
-            config = fs.existsSync(fullPath)
+            configExists = fs.existsSync(fullPath),
+            config = configExists
                 ? JSON.parse(fs.readFileSync(fullPath, { encoding: 'UTF-8' }))
                 : {};
+
+        if(!configExists && file !== defaultConfigFile) {
+            this.console.error('Missed config', [fullPath]);
+            return config;
+        }
 
         if(!config.hasOwnProperty('clean')) return config;
 
