@@ -209,6 +209,19 @@ var closure = {
             'c = (function ($) { return \'c\'; }).call(global, $);\n' +
             '["$"].forEach(function(g) { delete global[g]; });\n' +
             '})(this);';
+    },
+
+    getClosureStringMakeJSDoc: function() {
+        return '/*!\n' +
+            ' * @file Описание собранного файла\n' +
+            ' * @copyright 2014 Artem Kurbatov, tenorok.ru\n' +
+            ' * @license MIT license\n' +
+            ' * @date 29 January 2014\n' +
+            ' * @version 0.0.7\n' +
+            ' */\n' +
+            '(function(global, undefined) {\n' +
+            'var a = (function () { return \'a\'; }).call(global);\n' +
+            '})(this);';
     }
 
 };
