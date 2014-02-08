@@ -59,14 +59,22 @@ function Maker(options) {
 
     /**
      * Опции сборки
-     * @type {{directory: String, module: String|boolean, postfix: String, verbose: Array, clean: Object}}
+     * @type {{
+     * directory: String,
+     * module: String|boolean,
+     * postfix: String,
+     * verbose: Array,
+     * clean: Object,
+     * jsdoc: Object
+     * }}
      */
     this.options = _.defaults(options || {}, {
         directory: '.',
         module: false,
         postfix: 'js',
         verbose: [],
-        clean: {}
+        clean: {},
+        jsdoc: {}
     });
 
     /**
@@ -428,6 +436,7 @@ Maker.prototype = {
             cleaned = [],
             closure = [
                 this.convertClean(),
+                this.convertJSDoc(),
                 '(function(global, undefined) {\nvar '
             ];
 
@@ -467,6 +476,26 @@ Maker.prototype = {
     convertClean: function() {
         if(!this.clean.length) return '';
         return this.clean.join('\n') + '\n';
+    },
+
+    /**
+     * Сформировать строку JSDoc
+     * @private
+     * @returns {String}
+     */
+    convertJSDoc: function() {
+        if(_.isEmpty(this.options.jsdoc)) return [];
+
+        var jsdoc = ['/*!'],
+            option = this.options.jsdoc;
+
+        Object.keys(option).forEach(function(tag) {
+            jsdoc.push(' * @' + tag + ' ' + option[tag]);
+        });
+
+        jsdoc.push(' */\n');
+
+        return jsdoc.join('\n');
     },
 
     /**

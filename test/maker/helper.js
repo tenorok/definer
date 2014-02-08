@@ -213,7 +213,7 @@ var closure = {
 
     getClosureStringMakeJSDoc: function() {
         return '/*!\n' +
-            ' * @file Описание собранного файла\n' +
+            ' * @file File description\n' +
             ' * @copyright 2014 Artem Kurbatov, tenorok.ru\n' +
             ' * @license MIT license\n' +
             ' * @date 29 January 2014\n' +
