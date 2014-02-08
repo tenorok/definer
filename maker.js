@@ -426,7 +426,10 @@ Maker.prototype = {
 
         var length = this.modules.length,
             cleaned = [],
-            closure = [this.clean.join('\n'), '(function(global, undefined) {\nvar '];
+            closure = [
+                this.convertClean(),
+                '(function(global, undefined) {\nvar '
+            ];
 
         this.modules.forEach(function(module, index) {
 
@@ -454,6 +457,16 @@ Maker.prototype = {
 
         // Если был добавлен хотя бы один модуль
         return this.closure = closure.length > 2 ? closure.join('') : '';
+    },
+
+    /**
+     * Сформировать строку содержимого файлов очищенных модулей
+     * @private
+     * @returns {String}
+     */
+    convertClean: function() {
+        if(!this.clean.length) return '';
+        return this.clean.join('\n') + '\n';
     },
 
     /**

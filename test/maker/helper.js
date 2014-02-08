@@ -189,7 +189,7 @@ var closure = {
         return 'var _ = function() { return \'underscore\'; };\n' +
             'var $ = function() { return \'jquery\'; };\n' +
             '$.ui = function() { return \'jquery.ui\'; };\n' +
-            '$.plugin = function() { return \'jquery.plugin\'; };' +
+            '$.plugin = function() { return \'jquery.plugin\'; };\n' +
             '(function(global, undefined) {\n' +
             'var _ = global._,\n' +
             '$ = global.$,\n' +
@@ -203,7 +203,7 @@ var closure = {
     getClosureStringMakeCleanFilesModuleC: function() {
         return 'var $ = function() { return \'jquery\'; };\n' +
             '$.ui = function() { return \'jquery.ui\'; };\n' +
-            '$.plugin = function() { return \'jquery.plugin\'; };' +
+            '$.plugin = function() { return \'jquery.plugin\'; };\n' +
             '(function(global, undefined) {\n' +
             'var $ = global.$,\n' +
             'c = (function ($) { return \'c\'; }).call(global, $);\n' +
