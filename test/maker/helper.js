@@ -4,7 +4,8 @@ const exec = require('child_process').exec,
 
     assert = require('chai').assert,
     vow = require('vow'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    moment = require('moment');
 
 var binding = {
 
@@ -216,7 +217,7 @@ var closure = {
             ' * @file File description\n' +
             ' * @copyright 2014 Artem Kurbatov, tenorok.ru\n' +
             ' * @license MIT license\n' +
-            ' * @date 29 January 2014\n' +
+            ' * @date ' + moment().lang('en').format('D MMMM YYYY') + '\n' +
             ' * @version 0.0.7\n' +
             ' */\n' +
             '(function(global, undefined) {\n' +
