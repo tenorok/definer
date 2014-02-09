@@ -144,7 +144,7 @@ Cli.prototype = {
         /**
          * Модифицировать поля опции jsdoc
          * @param {String} tag Имя тега
-         * @param {String|boolean} value Значение тега
+         * @param {*} value Значение тега
          * @param {String} basePath Абсолютный путь до директории с конфигурационным файлом
          * @returns {String|boolean} Абсолютный путь до файла или поле без изменения
          */

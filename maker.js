@@ -5,6 +5,7 @@ const path = require('path'),
     walk = require('walk'),
     fs = require('graceful-fs'),
     _ = require('underscore'),
+    moment = require('moment'),
 
     Logger = require('./logger');
 
@@ -490,12 +491,30 @@ Maker.prototype = {
             option = this.options.jsdoc;
 
         Object.keys(option).forEach(function(tag) {
-            jsdoc.push(' * @' + tag + ' ' + option[tag]);
-        });
+            jsdoc.push(this.getJSDocTag(tag, option[tag]));
+        }, this);
 
         jsdoc.push(' */\n');
 
         return jsdoc.join('\n');
+    },
+
+    /**
+     * Получить строку JSDoc тега
+     * @private
+     * @param {String} tag Имя тега
+     * @param {*} value Значение тега
+     * @returns {String}
+     */
+    getJSDocTag: function(tag, value) {
+
+        var before = ' * @' + tag + ' ';
+
+        if(tag === 'date' && value === true) {
+            return before + moment().lang('en').format('D MMMM YYYY');
+        }
+
+        return before + value;
     },
 
     /**
