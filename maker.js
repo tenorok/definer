@@ -45,6 +45,13 @@ function Maker(options) {
     this.modulesToModule = {};
 
     /**
+     * Строка JSDoc
+     * @private
+     * @type {String}
+     */
+    this.jsdoc = '';
+
+    /**
      * Строка замыкания из отсортированного списка модулей
      * @private
      * @type {String}
@@ -101,6 +108,7 @@ Maker.prototype = {
 
         this.getModules()
             .then(this.getCleanFiles.bind(this))
+            .then(this.getJSDoc.bind(this))
             .then(function() {
                 this.convertToClosure();
                 this.saveClosureToFile().then(function(saved) {
@@ -449,7 +457,7 @@ Maker.prototype = {
             cleaned = [],
             closure = [
                 this.convertClean(),
-                this.convertJSDoc(),
+                this.jsdoc,
                 '(function(global, undefined) {\nvar '
             ];
 
@@ -489,63 +497,6 @@ Maker.prototype = {
     convertClean: function() {
         if(!this.clean.length) return '';
         return this.clean.join('\n') + '\n';
-    },
-
-    /**
-     * Сформировать строку JSDoc
-     * @private
-     * @returns {String}
-     */
-    convertJSDoc: function() {
-        if(_.isEmpty(this.options.jsdoc)) return [];
-
-        var jsdoc = ['/*!'],
-            option = this.options.jsdoc;
-
-        Object.keys(option).forEach(function(tag) {
-            this.getJSDocTag(tag, option[tag]).then(function(line) {
-                jsdoc.push(line);
-            });
-        }, this);
-
-        jsdoc.push(' */\n');
-
-        return jsdoc.join('\n');
-    },
-
-    /**
-     * Получить строку JSDoc тега
-     * @private
-     * @param {String} tag Имя тега
-     * @param {*} value Значение тега
-     * @returns {Promise}
-     */
-    getJSDocTag: function(tag, value) {
-
-        var promise = vow.promise(),
-            before = ' * @' + tag + ' ',
-            standard = before + value;
-
-        if(tag === 'date' && value === true) {
-            promise.fulfill(before + moment().lang('en').format('D MMMM YYYY'));
-            return promise;
-        }
-
-        this.openExistsFile(value).then(
-            function(data) {
-                try {
-                    var jsonValue = JSON.parse(data)[tag];
-                } catch(error) {
-                    return promise.fulfill(standard);
-                }
-                promise.fulfill(before + jsonValue);
-            },
-            function() {
-                promise.fulfill(standard);
-            }
-        );
-
-        return promise;
     },
 
     /**
@@ -727,6 +678,69 @@ Maker.prototype = {
     moveBeforeIndex: function(moduleIndex, dependencyIndex) {
         this.modules.splice(moduleIndex, 0, this.modules[dependencyIndex]); // Скопировать на новое место
         this.modules.splice(dependencyIndex + 1, 1); // Удалить с прошлого места
+    },
+
+    /**
+     * Получить сформированную строку JSDoc
+     * @private
+     * @returns {Promise}
+     */
+    getJSDoc: function() {
+        var jsdoc = ['/*!'],
+            option = this.options.jsdoc,
+            promise = vow.promise(),
+            promises = [];
+
+        if(_.isEmpty(option)) {
+            promise.fulfill('');
+            return promise;
+        }
+
+        Object.keys(option).forEach(function(tag) {
+            promises.push(this.getJSDocTag(tag, option[tag]));
+        }, this);
+
+        vow.all(promises).then(function(lines) {
+            this.jsdoc = jsdoc.concat(lines).concat([' */\n']).join('\n');
+            promise.fulfill(this.jsdoc);
+        }.bind(this));
+
+        return promise;
+    },
+
+    /**
+     * Получить строку JSDoc тега
+     * @private
+     * @param {String} tag Имя тега
+     * @param {*} value Значение тега
+     * @returns {Promise}
+     */
+    getJSDocTag: function(tag, value) {
+
+        var promise = vow.promise(),
+            before = ' * @' + tag + ' ',
+            standard = before + value;
+
+        if(tag === 'date' && value === true) {
+            promise.fulfill(before + moment().lang('en').format('D MMMM YYYY'));
+            return promise;
+        }
+
+        this.openExistsFile(value).then(
+            function(data) {
+                try {
+                    var jsonValue = JSON.parse(data)[tag];
+                } catch(error) {
+                    return promise.fulfill(standard);
+                }
+                promise.fulfill(before + jsonValue);
+            },
+            function() {
+                promise.fulfill(standard);
+            }
+        );
+
+        return promise;
     }
 
 };
