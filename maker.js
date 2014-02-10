@@ -152,6 +152,20 @@ Maker.prototype = {
     },
 
     /**
+     * Проверить файл на существование
+     * @private
+     * @param {String} filePath Путь до файла
+     * @returns {Promise} Будет отклонён в случае отсутствия файла
+     */
+    isFileExists: function(filePath) {
+        var promise = vow.promise();
+        fs.exists(filePath, function(exists) {
+            promise[exists ? 'fulfill' : 'reject']();
+        });
+        return promise;
+    },
+
+    /**
      * Открыть файл
      * @private
      * @param {String} filePath Путь до файла
@@ -163,6 +177,32 @@ Maker.prototype = {
             if(err) this.console.error('Missed', [filePath]);
             promise.fulfill(data || '');
         }.bind(this));
+        return promise;
+    },
+
+    /**
+     * Открыть файл, если он существует
+     * @private
+     * @param {String} filePath Путь до файла
+     * @returns {Promise} Будет отклонён в случае отсутствия файла
+     */
+    openExistsFile: function(filePath) {
+
+        var promise = vow.promise();
+
+        this.isFileExists(filePath).then(
+
+            function() {
+                this.openFile(filePath).then(function(data) {
+                    promise.fulfill(data);
+                });
+            }.bind(this),
+
+            function() {
+                promise.reject();
+            }
+        );
+
         return promise;
     },
 
