@@ -531,7 +531,9 @@ Maker.prototype = {
             option = this.options.jsdoc;
 
         Object.keys(option).forEach(function(tag) {
-            jsdoc.push(this.getJSDocTag(tag, option[tag]));
+            this.getJSDocTag(tag, option[tag]).then(function(line) {
+                jsdoc.push(line);
+            });
         }, this);
 
         jsdoc.push(' */\n');
@@ -544,17 +546,34 @@ Maker.prototype = {
      * @private
      * @param {String} tag Имя тега
      * @param {*} value Значение тега
-     * @returns {String}
+     * @returns {Promise}
      */
     getJSDocTag: function(tag, value) {
 
-        var before = ' * @' + tag + ' ';
+        var promise = vow.promise(),
+            before = ' * @' + tag + ' ',
+            standard = before + value;
 
         if(tag === 'date' && value === true) {
-            return before + moment().lang('en').format('D MMMM YYYY');
+            promise.fulfill(before + moment().lang('en').format('D MMMM YYYY'));
+            return promise;
         }
 
-        return before + value;
+        this.openExistsFile(value).then(
+            function(data) {
+                try {
+                    var jsonValue = JSON.parse(data)[tag];
+                } catch(error) {
+                    return promise.fulfill(standard);
+                }
+                promise.fulfill(before + jsonValue);
+            },
+            function() {
+                promise.fulfill(standard);
+            }
+        );
+
+        return promise;
     },
 
     /**
