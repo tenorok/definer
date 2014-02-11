@@ -10,7 +10,7 @@ const path = require('path'),
     defaultConfigFile = 'definer.json';
 
 commander
-    .version('0.0.2')
+    .version('0.0.3')
     .usage('[options] <file>')
     .option('-d, --directory <path>', 'start directory path', '.')
     .option('-m, --module <name>', 'target module name')
@@ -78,32 +78,84 @@ Cli.prototype = {
      * @returns {Object}
      */
     getConfig: function(file) {
-        var fullPath = path.join(this.cwd, file),
-            configExists = fs.existsSync(fullPath),
+        var configPath = path.join(this.cwd, file),
+            configExists = fs.existsSync(configPath),
             config = configExists
-                ? JSON.parse(fs.readFileSync(fullPath, { encoding: 'UTF-8' }))
+                ? JSON.parse(fs.readFileSync(configPath, { encoding: 'UTF-8' }))
                 : {};
 
-        if(!configExists && file !== defaultConfigFile) {
-            this.console.error('Missed config', [fullPath]);
+        if(!configExists) {
+            if(file !== defaultConfigFile) {
+                this.console.error('Missed config', [configPath]);
+            }
             return config;
         }
 
-        if(!config.hasOwnProperty('clean')) return config;
+        return this.propertyModifier(['clean', 'jsdoc'], path.dirname(configPath), config);
+    },
 
-        Object.keys(config.clean).forEach(function(module) {
-            var moduleFiles = config.clean[module],
-                files = Array.isArray(moduleFiles) ? moduleFiles : [moduleFiles],
+    /**
+     * Модифицировать поля конфигурационного объекта
+     * @private
+     * @param {String[]} properties Поля к модификации
+     * @param {String} basePath Абсолютный путь до директории с конфигурационным файлом
+     * @param {Object} config Конфигурационный объект
+     * @returns {*}
+     */
+    propertyModifier: function(properties, basePath, config) {
+        properties.forEach(function(property) {
+            if(!config.hasOwnProperty(property)) return;
+
+            Object.keys(config[property]).forEach(function(key) {
+                config[property][key] = this.modifyProperty[property].call(
+                    this, key, config[property][key], basePath
+                );
+            }, this);
+        }, this);
+
+        return config;
+    },
+
+    /**
+     * Методы модификации полей опций конфигурационного объекта
+     * @private
+     * @type {Function[]}
+     */
+    modifyProperty: {
+
+        /**
+         * Модифицировать поля опции clean
+         * @param {String} module Имя модуля
+         * @param {String|Array} value Путь до файла или нескольких файлов
+         * @param {String} basePath Абсолютный путь до директории с конфигурационным файлом
+         * @returns {Array} Абсолютные пути до файлов модуля
+         */
+        clean: function(module, value, basePath) {
+            var files = Array.isArray(value) ? value : [value],
                 filesFullPath = [];
 
             files.forEach(function(file) {
-                filesFullPath.push(path.join(path.dirname(fullPath), file));
+                filesFullPath.push(path.join(basePath, file));
             });
 
-            config.clean[module] = filesFullPath;
-        });
+            return filesFullPath;
+        },
 
-        return config;
+        /**
+         * Модифицировать поля опции jsdoc
+         * @param {String} tag Имя тега
+         * @param {*} value Значение тега
+         * @param {String} basePath Абсолютный путь до директории с конфигурационным файлом
+         * @returns {String|boolean} Абсолютный путь до файла или поле без изменения
+         */
+        jsdoc: function(tag, value, basePath) {
+            if(!_.isString(value)) return value;
+
+            var file = path.join(basePath, value);
+
+            return fs.existsSync(file) ? file : value;
+        }
+
     },
 
     /**
@@ -139,7 +191,8 @@ Cli.prototype = {
             module: this.options.module,
             postfix: this.options.postfix,
             verbose: this.options.verbose,
-            clean: this.options.clean
+            clean: this.options.clean,
+            jsdoc: this.options.jsdoc
         }).make(this.saveFilePath).then(function(saved) {
             saved
                 ? this.console.info('Saved', [this.saveFilePath])

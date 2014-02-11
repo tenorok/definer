@@ -5,6 +5,7 @@ const path = require('path'),
     walk = require('walk'),
     fs = require('graceful-fs'),
     _ = require('underscore'),
+    moment = require('moment'),
 
     Logger = require('./logger');
 
@@ -44,6 +45,13 @@ function Maker(options) {
     this.modulesToModule = {};
 
     /**
+     * Строка JSDoc
+     * @private
+     * @type {String}
+     */
+    this.jsdoc = '';
+
+    /**
      * Строка замыкания из отсортированного списка модулей
      * @private
      * @type {String}
@@ -59,14 +67,22 @@ function Maker(options) {
 
     /**
      * Опции сборки
-     * @type {{directory: String, module: String|boolean, postfix: String, verbose: Array, clean: Object}}
+     * @type {{
+     * directory: String,
+     * module: String|boolean,
+     * postfix: String,
+     * verbose: Array,
+     * clean: Object,
+     * jsdoc: Object
+     * }}
      */
     this.options = _.defaults(options || {}, {
         directory: '.',
         module: false,
         postfix: 'js',
         verbose: [],
-        clean: {}
+        clean: {},
+        jsdoc: {}
     });
 
     /**
@@ -92,6 +108,7 @@ Maker.prototype = {
 
         this.getModules()
             .then(this.getCleanFiles.bind(this))
+            .then(this.getJSDoc.bind(this))
             .then(function() {
                 this.convertToClosure();
                 this.saveClosureToFile().then(function(saved) {
@@ -143,6 +160,20 @@ Maker.prototype = {
     },
 
     /**
+     * Проверить файл на существование
+     * @private
+     * @param {String} filePath Путь до файла
+     * @returns {Promise} Будет отклонён в случае отсутствия файла
+     */
+    isFileExists: function(filePath) {
+        var promise = vow.promise();
+        fs.exists(filePath, function(exists) {
+            promise[exists ? 'fulfill' : 'reject']();
+        });
+        return promise;
+    },
+
+    /**
      * Открыть файл
      * @private
      * @param {String} filePath Путь до файла
@@ -154,6 +185,32 @@ Maker.prototype = {
             if(err) this.console.error('Missed', [filePath]);
             promise.fulfill(data || '');
         }.bind(this));
+        return promise;
+    },
+
+    /**
+     * Открыть файл, если он существует
+     * @private
+     * @param {String} filePath Путь до файла
+     * @returns {Promise} Будет отклонён в случае отсутствия файла
+     */
+    openExistsFile: function(filePath) {
+
+        var promise = vow.promise();
+
+        this.isFileExists(filePath).then(
+
+            function() {
+                this.openFile(filePath).then(function(data) {
+                    promise.fulfill(data);
+                });
+            }.bind(this),
+
+            function() {
+                promise.reject();
+            }
+        );
+
         return promise;
     },
 
@@ -188,34 +245,6 @@ Maker.prototype = {
         }, this);
 
         return vow.all(promises);
-    },
-
-    /**
-     * Открыть список файлов с сохранением порядка
-     * @private
-     * @param {String[]} filesPath Пути до файлов
-     * @param {Maker~openFilesCallback} [callback] Колбек вызывается для каждого файла
-     * @returns {Promise}
-     */
-    openFilesByOrder: function(filesPath, callback) {
-
-        var promise = vow.promise(),
-            filesContent = {};
-
-        this
-            .openFiles(filesPath, function(file, data) {
-                filesContent[file] = data;
-                callback && callback.call(this, file, data);
-            })
-            .then(function() {
-                var filesByOrder = [];
-                filesPath.forEach(function(file) {
-                    filesByOrder.push(filesContent[file]);
-                });
-                promise.fulfill(filesByOrder);
-            });
-
-        return promise;
     },
 
     /**
@@ -411,7 +440,7 @@ Maker.prototype = {
         var moduleFiles = this.options.clean[module],
             files = Array.isArray(moduleFiles) ? moduleFiles : [moduleFiles];
 
-        this.openFilesByOrder(files).then(function(filesContent) {
+        this.openFiles(files).then(function(filesContent) {
             promise.fulfill(filesContent.join('\n'));
         });
 
@@ -426,7 +455,11 @@ Maker.prototype = {
 
         var length = this.modules.length,
             cleaned = [],
-            closure = [this.clean.join('\n'), '(function(global, undefined) {\nvar '];
+            closure = [
+                this.convertClean(),
+                this.jsdoc,
+                '(function(global, undefined) {\nvar '
+            ];
 
         this.modules.forEach(function(module, index) {
 
@@ -454,6 +487,16 @@ Maker.prototype = {
 
         // Если был добавлен хотя бы один модуль
         return this.closure = closure.length > 2 ? closure.join('') : '';
+    },
+
+    /**
+     * Сформировать строку содержимого файлов очищенных модулей
+     * @private
+     * @returns {String}
+     */
+    convertClean: function() {
+        if(!this.clean.length) return '';
+        return this.clean.join('\n') + '\n';
     },
 
     /**
@@ -635,6 +678,72 @@ Maker.prototype = {
     moveBeforeIndex: function(moduleIndex, dependencyIndex) {
         this.modules.splice(moduleIndex, 0, this.modules[dependencyIndex]); // Скопировать на новое место
         this.modules.splice(dependencyIndex + 1, 1); // Удалить с прошлого места
+    },
+
+    /**
+     * Получить сформированную строку JSDoc
+     * @private
+     * @returns {Promise}
+     */
+    getJSDoc: function() {
+        var jsdoc = ['/*!'],
+            option = this.options.jsdoc,
+            promise = vow.promise(),
+            promises = [];
+
+        if(_.isEmpty(option)) {
+            promise.fulfill('');
+            return promise;
+        }
+
+        Object.keys(option).forEach(function(tag) {
+            promises.push(this.getJSDocTag(tag, option[tag]));
+        }, this);
+
+        vow.all(promises).then(function(lines) {
+            this.jsdoc = jsdoc.concat(lines).concat([' */\n']).join('\n');
+            promise.fulfill(this.jsdoc);
+        }.bind(this));
+
+        return promise;
+    },
+
+    /**
+     * Получить строку JSDoc тега
+     * @private
+     * @param {String} tag Имя тега
+     * @param {*} value Значение тега
+     * @returns {Promise}
+     */
+    getJSDocTag: function(tag, value) {
+
+        var promise = vow.promise(),
+            before = ' * @' + tag + ' ',
+            standard = before + value;
+
+        if(tag === 'date' && value === true) {
+            promise.fulfill(before + moment().lang('en').format('D MMMM YYYY'));
+            return promise;
+        }
+
+        this.openExistsFile(value).then(
+
+            function(data) {
+                try {
+                    var jsonValue = JSON.parse(data)[tag];
+                } catch(error) {
+                    this.console.warn('JSDoc file must be JSON', ['@' + tag, value]);
+                    return promise.fulfill(standard);
+                }
+                promise.fulfill(before + jsonValue);
+            }.bind(this),
+
+            function() {
+                promise.fulfill(standard);
+            }
+        );
+
+        return promise;
     }
 
 };

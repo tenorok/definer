@@ -18,7 +18,8 @@
         "graceful-fs": "~2.0.1",
         "underscore": "~1.5.2",
         "commander": "~2.1.0",
-        "cli-color": "~0.2.3"
+        "cli-color": "~0.2.3",
+        "moment": "~2.5.1"
     },
     "devDependencies": {
         "mocha": "~1.15.1",

@@ -1,6 +1,4 @@
-var assert = require('chai').assert,
-    helper = require('./helper.js'),
-    Maker = require('../../maker.js');
+var helper = require('./helper.js');
 
 describe('Тестирование CLI.', function() {
 
