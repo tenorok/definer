@@ -2,7 +2,7 @@ var path = require('path'),
     assert = require('chai').assert,
     Maker = require('../../maker.js');
 
-describe('Тестирование метода openFilesByOrder.', function() {
+describe('Тестирование метода openFiles.', function() {
 
     var directory = path.join(__dirname, 'clean/libs');
 
@@ -30,7 +30,7 @@ describe('Тестирование метода openFilesByOrder.', function() {
             directory: directory,
             verbose: ['error']
         })
-            .openFilesByOrder(getFileList())
+            .openFiles(getFileList())
             .then(function(content) {
                 assert.equal(content.join(''), standardResult);
                 done();
@@ -45,7 +45,7 @@ describe('Тестирование метода openFilesByOrder.', function() {
             directory: directory,
             verbose: ['error']
         })
-            .openFilesByOrder(getFileList(), function(file, data) {
+            .openFiles(getFileList(), function(file, data) {
                 filesData[file] = data;
             })
             .then(function() {

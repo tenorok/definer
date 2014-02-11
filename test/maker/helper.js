@@ -4,7 +4,8 @@ const exec = require('child_process').exec,
 
     assert = require('chai').assert,
     vow = require('vow'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    moment = require('moment');
 
 var binding = {
 
@@ -189,7 +190,7 @@ var closure = {
         return 'var _ = function() { return \'underscore\'; };\n' +
             'var $ = function() { return \'jquery\'; };\n' +
             '$.ui = function() { return \'jquery.ui\'; };\n' +
-            '$.plugin = function() { return \'jquery.plugin\'; };' +
+            '$.plugin = function() { return \'jquery.plugin\'; };\n' +
             '(function(global, undefined) {\n' +
             'var _ = global._,\n' +
             '$ = global.$,\n' +
@@ -203,11 +204,24 @@ var closure = {
     getClosureStringMakeCleanFilesModuleC: function() {
         return 'var $ = function() { return \'jquery\'; };\n' +
             '$.ui = function() { return \'jquery.ui\'; };\n' +
-            '$.plugin = function() { return \'jquery.plugin\'; };' +
+            '$.plugin = function() { return \'jquery.plugin\'; };\n' +
             '(function(global, undefined) {\n' +
             'var $ = global.$,\n' +
             'c = (function ($) { return \'c\'; }).call(global, $);\n' +
             '["$"].forEach(function(g) { delete global[g]; });\n' +
+            '})(this);';
+    },
+
+    getClosureStringMakeJSDoc: function() {
+        return '/*!\n' +
+            ' * @file File description\n' +
+            ' * @copyright 2014 Artem Kurbatov, tenorok.ru\n' +
+            ' * @license MIT license\n' +
+            ' * @date ' + moment().lang('en').format('D MMMM YYYY') + '\n' +
+            ' * @version 0.0.7\n' +
+            ' */\n' +
+            '(function(global, undefined) {\n' +
+            'var a = (function () { return \'a\'; }).call(global);\n' +
             '})(this);';
     }
 
