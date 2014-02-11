@@ -727,14 +727,17 @@ Maker.prototype = {
         }
 
         this.openExistsFile(value).then(
+
             function(data) {
                 try {
                     var jsonValue = JSON.parse(data)[tag];
                 } catch(error) {
+                    this.console.warn('JSDoc file must be JSON', ['@' + tag, value]);
                     return promise.fulfill(standard);
                 }
                 promise.fulfill(before + jsonValue);
-            },
+            }.bind(this),
+
             function() {
                 promise.fulfill(standard);
             }
