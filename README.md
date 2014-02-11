@@ -178,3 +178,37 @@ var a = (function () { return 'a'; }).call(global),
 ```
 
 [См. также: метод clean](#Метод-clean)
+
+##### Опция `jsdoc`
+
+*Опция может быть указана только в конфигурационном файле.*
+
+Опция формирует JSDoc, содержащий информацию о собранном файле.
+
+Возможно указание относительного пути до JSON-файла, из которого сборщик получит значение одноимённого поля.
+
+Тег `date` способен принять значение `true` и заменить его на текущую дату.
+
+```json
+{
+    "jsdoc": {
+        "file": "File description",
+        "copyright": "2014 Artem Kurbatov, tenorok.ru",
+        "license": "MIT license",
+        "version": "another.json",
+        "date": true
+    }
+}
+```
+
+Результат может выглядеть примерно так:
+
+```javascript
+/*!
+ * @file File description
+ * @copyright 2014 Artem Kurbatov, tenorok.ru
+ * @license MIT license
+ * @version 0.0.7
+ * @date 16 June 2014
+ */
+```
