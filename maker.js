@@ -68,7 +68,7 @@ function Maker(options) {
     /**
      * Опции сборки
      * @type {{
-     * directory: String,
+     * directory: String|String[],
      * module: String|boolean,
      * postfix: String,
      * verbose: Array,
@@ -120,12 +120,37 @@ Maker.prototype = {
     },
 
     /**
-     * Рекурсивно получить список всех файлов в директории
+     * Рекурсивно получить список всех файлов в директориях
      * @returns {Promise}
      */
     getFileList: function() {
         var promise = vow.promise(),
-            walker = walk.walk(this.options.directory, { followLinks: false }),
+            promises = [],
+            directories = !Array.isArray(this.options.directory) ? [this.options.directory] : this.options.directory;
+
+        directories.forEach(function(directory) {
+            promises.push(this.getDirectoryFileList(directory));
+        }, this);
+
+        vow.all(promises).then(function(lists) {
+            promise.fulfill(lists.reduce(function(flatList, list) {
+                return flatList.concat(list);
+            }, []));
+        });
+
+        return promise;
+    },
+
+    /**
+     * Рекурсивно получить список всех файлов в директории
+     * @private
+     * @param {String} directory Путь до директории
+     * @returns {Promise}
+     */
+    getDirectoryFileList: function(directory) {
+
+        var promise = vow.promise(),
+            walker = walk.walk(directory, { followLinks: false }),
             filelist = [];
 
         walker.on('file', function(root, stat, next) {
