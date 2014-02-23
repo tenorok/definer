@@ -167,6 +167,13 @@ var closure = {
             '})(this);';
     },
 
+    getClosureStringModuleX: function() {
+        return '(function(global, undefined) {\n' +
+            'var a = (function () { return \'a\'; }).call(global),\n' +
+            'x = (function (a) { return \'x\'; }).call(global, a);\n' +
+            '})(this);';
+    },
+
     getClosureStringClean: function() {
         return '(function(global, undefined) {\n' +
             'var _ = global._,\n' +

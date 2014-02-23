@@ -12,6 +12,10 @@ describe('Тестирование CLI.', function() {
         cli.exec('-d test/maker/modules/ -m c', helper.getClosureStringModuleC(), done);
     });
 
+    it('Только модуль x', function(done) {
+        cli.exec('-d test/maker/modules/,test/maker/modules2/ -m x', helper.getClosureStringModuleX(), done);
+    });
+
     after(function(done) {
         cli.unlinkAfterExec(done);
     });
