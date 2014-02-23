@@ -10,9 +10,9 @@ const path = require('path'),
     defaultConfigFile = 'definer.json';
 
 commander
-    .version('0.0.3')
+    .version('0.0.4')
     .usage('[options] <file>')
-    .option('-d, --directory <path>', 'start directory path', '.')
+    .option('-d, --directory <path1,path2>', 'directory of modules, comma delimited', '.')
     .option('-m, --module <name>', 'target module name')
     .option('-p, --postfix <postfix>', 'postfix to find files')
     .option('-v, --verbose <modes>', 'l - log, i - info, w - warn, e - error', function(modes) { return modes.split(''); })
@@ -31,7 +31,7 @@ function Cli(filePath, options) {
     this.saveFilePath = this.getAbsolutePath(filePath);
 
     this.options = _.extend(this.getConfig(options.config), this.cleanObject({
-        directory: this.getAbsolutePath(options.directory),
+        directory: this.getAbsolutePath(options.directory.split(',')),
         module: options.module,
         postfix: options.postfix,
         verbose: verbose
@@ -48,13 +48,17 @@ Cli.prototype = {
     cwd: process.cwd(),
 
     /**
-     * Получить абсолютный путь из отностильного
+     * Получить абсолютный путь из относительного
      * @private
-     * @param {String} relativePath Относительный путь
-     * @returns {String}
+     * @param {String|String[]} relativePaths Относительный путь или массив путей
+     * @returns {String|String[]}
      */
-    getAbsolutePath: function(relativePath) {
-        return path.join(this.cwd, relativePath);
+    getAbsolutePath: function(relativePaths) {
+        return Array.isArray(relativePaths)
+            ? relativePaths.map(function(relativePath) {
+                return path.join(this.cwd, relativePath);
+            }, this)
+            : path.join(this.cwd, relativePaths);
     },
 
     /**
