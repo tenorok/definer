@@ -113,6 +113,10 @@ var a = (function () { return 'a'; }).call(global),
 
     ./node_modules/.bin/definer -d modules/ all.js
 
+Возможно указание нескольких директорий через запятую.
+
+    ./node_modules/.bin/definer -d modules/,modules2/ all.js
+
 По умолчанию definer ищет модули в текущей директории.
 
 ##### Опция `-p, --postfix`
