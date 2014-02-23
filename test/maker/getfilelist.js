@@ -29,4 +29,28 @@ describe('Тестирование метода getFileList.', function() {
         }).done();
     });
 
+    it('Получение всех файлов из двух соседних директорий', function(done) {
+        new Maker({
+            directory: [
+                path.join(__dirname, 'modules'),
+                path.join(__dirname, 'modules2')
+            ],
+            verbose: ['error']
+        }).getFileList().then(function(filelist) {
+
+            assert.deepEqual(filelist, getAbsoluteFilePath([
+                'modules/b.js',
+                'modules/d.js',
+                'modules/sub/c.js',
+                'modules/sub/sub/a.js',
+                'modules/sub/sub/ef.js',
+                'modules/sub/sub/fake.js',
+                'modules2/x.js',
+                'modules2/z.js'
+            ]));
+
+            done();
+        }).done();
+    });
+
 });
