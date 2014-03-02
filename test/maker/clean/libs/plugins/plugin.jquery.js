@@ -1,1 +1,1 @@
-$.plugin = function() { return 'jquery.plugin'; };
+(function(global) { global.$.plugin = 'jquery.plugin'; })(this);

@@ -194,10 +194,13 @@ var closure = {
     },
 
     getClosureStringMakeCleanFiles: function() {
-        return 'var _ = function() { return \'underscore\'; };\n' +
-            'var $ = function() { return \'jquery\'; };\n' +
-            '$.ui = function() { return \'jquery.ui\'; };\n' +
-            '$.plugin = function() { return \'jquery.plugin\'; };\n' +
+        return '(function(undefined) {\n' +
+            'var exports = modules = define = undefined;\n' +
+            '(function(global) { global._ = \'underscore\'; })(this);\n' +
+            '(function(global) { global.$ = \'jquery\'; })(this);\n' +
+            '(function(global) { global.$.ui = \'jquery.ui\'; })(this);\n' +
+            '(function(global) { global.$.plugin = \'jquery.plugin\'; })(this);\n' +
+            '}).call(this);\n' +
             '(function(global, undefined) {\n' +
             'var _ = global._,\n' +
             '$ = global.$,\n' +
@@ -209,9 +212,12 @@ var closure = {
     },
 
     getClosureStringMakeCleanFilesModuleC: function() {
-        return 'var $ = function() { return \'jquery\'; };\n' +
-            '$.ui = function() { return \'jquery.ui\'; };\n' +
-            '$.plugin = function() { return \'jquery.plugin\'; };\n' +
+        return '(function(undefined) {\n' +
+            'var exports = modules = define = undefined;\n' +
+            '(function(global) { global.$ = \'jquery\'; })(this);\n' +
+            '(function(global) { global.$.ui = \'jquery.ui\'; })(this);\n' +
+            '(function(global) { global.$.plugin = \'jquery.plugin\'; })(this);\n' +
+            '}).call(this);\n' +
             '(function(global, undefined) {\n' +
             'var $ = global.$,\n' +
             'c = (function ($) { return \'c\'; }).call(global, $);\n' +
