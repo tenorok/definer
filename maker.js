@@ -113,14 +113,17 @@ Maker.prototype = {
 
         var promise = vow.promise();
 
+        this.console.start();
+
         this.getModules()
             .then(this.getCleanFiles.bind(this))
             .then(this.getJSDoc.bind(this))
             .then(function() {
                 this.convertToClosure();
                 this.saveClosureToFile().then(function(saved) {
+                    this.console.finish();
                     promise.fulfill(saved);
-                }).done();
+                }.bind(this)).done();
             }.bind(this)).done();
 
         return promise;
@@ -322,7 +325,7 @@ Maker.prototype = {
                 dependencies: this.getArguments(body),
                 body: body
             };
-            this.console.log('Include', [filePath, '\n         Module:', name]);
+            this.console.log({ operation: 'read', path: filePath, description: name });
         }.bind(this);
 
         definer.clean = function(globals) {
@@ -335,7 +338,7 @@ Maker.prototype = {
                     dependencies: [],
                     clean: true
                 };
-                this.console.log('Clean', [filePath, '\n       Module:', name]);
+                this.console.log({ operation: 'read-clean', path: filePath, description: name });
             }, this);
         }.bind(this);
 
@@ -344,7 +347,7 @@ Maker.prototype = {
                 definer: definer
             });
         } catch(e) {
-            this.console.warn('Skipped', [filePath, '\n         ' + e]);
+            this.console.warn({ operation: 'skip', path: filePath, description: e });
         }
 
         return Object.keys(modules).length ? modules : null;
@@ -651,9 +654,13 @@ Maker.prototype = {
     addModule: function(method, name, info) {
         if(this.isModuleExist(name)) return;
 
+        var log = { operation: 'add', description: name };
+
         if(!info) {
-            return this.console.error('Undefined module', [name]);
+            return this.console.error(log);
         }
+
+        this.console.info(log);
 
         this.modules[method]({
             name: name,
@@ -779,7 +786,10 @@ Maker.prototype = {
                 try {
                     var jsonValue = JSON.parse(data)[tag];
                 } catch(error) {
-                    this.console.warn('JSDoc file must be JSON', ['@' + tag, value]);
+                    this.console.warn({
+                        operation: 'jsdoc', path: value,
+                        description: '@' + tag + ' file must be JSON'
+                    });
                     return promise.fulfill(standard);
                 }
                 promise.fulfill(before + jsonValue);
