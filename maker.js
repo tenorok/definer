@@ -93,6 +93,13 @@ function Maker(options) {
     this.console = new Logger(this.options.verbose);
 }
 
+/**
+ * Закешированные файлы
+ * @private
+ * @type {Object}
+ */
+Maker.cacheFiles = {};
+
 Maker.prototype = {
 
     /**
@@ -206,9 +213,16 @@ Maker.prototype = {
      */
     openFile: function(filePath) {
         var promise = vow.promise();
+
+        if(Maker.cacheFiles[filePath]) {
+            promise.fulfill(Maker.cacheFiles[filePath]);
+            return promise;
+        }
+
         fs.readFile(filePath, { encoding: 'UTF-8' }, function(err, data) {
-            if(err) this.console.error('Missed', [filePath]);
-            promise.fulfill(data || '');
+            this.console[err ? 'error' : 'log']({ operation: 'open', path: filePath });
+            Maker.cacheFiles[filePath] = data = data || '';
+            promise.fulfill(data);
         }.bind(this));
         return promise;
     },
