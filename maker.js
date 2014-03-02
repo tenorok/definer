@@ -521,6 +521,14 @@ Maker.prototype = {
      */
     convertClean: function() {
         if(!this.clean.length) return '';
+
+        this.clean.unshift(
+            '(function(undefined) {',
+            'var exports = modules = define = undefined;'
+        );
+
+        this.clean.push('}).call(this);');
+
         return this.clean.join('\n') + '\n';
     },
 
