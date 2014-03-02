@@ -198,9 +198,8 @@ Cli.prototype = {
             clean: this.options.clean,
             jsdoc: this.options.jsdoc
         }).make(this.saveFilePath).then(function(saved) {
-            saved
-                ? this.console.info('Saved', [this.saveFilePath])
-                : this.console.error(['Modules not found']);
+            var log = { operation: 'save', path: this.saveFilePath };
+            saved ? this.console.info(log) : this.console.error(log);
         }.bind(this)).done();
     }
 };
