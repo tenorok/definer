@@ -1,5 +1,6 @@
 const _ = require('underscore'),
-    clicolor = require('cli-color');
+    clicolor = require('cli-color'),
+    moment = require('moment');
 
 /**
  * Класс логгирования сообщений
@@ -71,11 +72,32 @@ Logger.prototype = {
 
     /**
      * Вывести сообщение об ошибки
-     * @param {String} title Заголовок
-     * @param {Array} message Строки сообщения
+     * @param {Object} info Информация для вывода
      */
-    error: function(title, message) {
-        this.print('error', title, message);
+    error: function(info) {
+        this.print('error', info);
+    },
+
+    /**
+     * Начать отсчёт и вывести соответствующее уведомление
+     * @returns {Logger}
+     */
+    start: function() {
+        this.timeStart = moment();
+        this.print('log', { text: 'build started' });
+        return this;
+    },
+
+    /**
+     * Завершить отсчёт и вывести время с начала отсчёта
+     * @returns {Logger}
+     */
+    finish: function() {
+        this.print('log', {
+            text: 'build finished -',
+            total: moment() - this.timeStart
+        });
+        return this;
     },
 
     /**
