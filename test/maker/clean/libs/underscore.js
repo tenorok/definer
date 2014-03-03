@@ -1,1 +1,1 @@
-var _ = function() { return 'underscore'; };
+(function(global) { global._ = 'underscore'; })(this);

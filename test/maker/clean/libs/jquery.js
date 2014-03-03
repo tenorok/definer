@@ -1,1 +1,1 @@
-var $ = function() { return 'jquery'; };
+(function(global) { global.$ = 'jquery'; })(this);
