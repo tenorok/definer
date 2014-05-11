@@ -1,1 +1,1 @@
-definer('z' , function() { return 'z'; });
+definer('z' , function() { return returns('nameZ', 'valueZ'); });
