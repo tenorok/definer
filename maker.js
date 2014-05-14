@@ -66,6 +66,13 @@ function Maker(options) {
     this.saveFilePath = '';
 
     /**
+     * Флаг наличия вызовов функции экспорта
+     * @private
+     * @type {boolean}
+     */
+    this.needReturns = false;
+
+    /**
      * Опции сборки
      * @type {{
      * directory: String|String[],
@@ -321,10 +328,20 @@ Maker.prototype = {
         var modules = {};
 
         var definer = function(name, body) {
+            var returns = false;
+
+            this.eval('(' + body + ')()', {
+                returns: function() {
+                    returns = true;
+                }
+            }, { path: filePath, code: 'callback' });
+
             modules[name] = {
                 dependencies: this.getArguments(body),
-                body: body
+                body: body,
+                returns: returns
             };
+
             this.console.log({ operation: 'read', path: filePath, description: name });
         }.bind(this);
 
@@ -342,15 +359,24 @@ Maker.prototype = {
             }, this);
         }.bind(this);
 
-        try {
-            vm.runInNewContext(fileContent, {
-                definer: definer
-            });
-        } catch(e) {
-            this.console.warn({ operation: 'skip', path: filePath, description: e });
-        }
+        this.eval(fileContent, { definer: definer }, { path: filePath, code: 'file' });
 
         return Object.keys(modules).length ? modules : null;
+    },
+
+    /**
+     * Выполнить код
+     * @private
+     * @param {String} code Код
+     * @param {Object} context Контекст выполнения кода
+     * @param {Object} info Дополнительная информация для вывода ошибки
+     */
+    eval: function(code, context, info) {
+        try {
+            vm.runInNewContext(code, context);
+        } catch(e) {
+            this.console.warn({ operation: 'skip', description: e, info: info });
+        }
     },
 
     /**
@@ -418,6 +444,10 @@ Maker.prototype = {
      * @returns {Object}
      */
     getModulesByDependencies: function(name, modules) {
+
+        if(!modules[name]) {
+            throw new ReferenceError('module ' + name + ' is not found');
+        }
 
         modules[name].dependencies.forEach(function(dependency) {
             this.modulesToModule[dependency] = modules[dependency];
@@ -500,7 +530,9 @@ Maker.prototype = {
             closure = [
                 this.convertClean(),
                 this.jsdoc,
-                '(function(global, undefined) {\nvar '
+                '(function(global, undefined) {\n',
+                this.convertReturns(),
+                'var '
             ];
 
         this.modules.forEach(function(module, index) {
@@ -547,6 +579,21 @@ Maker.prototype = {
         this.clean.push('}).call(this);');
 
         return this.clean.join('\n') + '\n';
+    },
+
+    /**
+     * Сформировать строку функции экспорта
+     * @private
+     * @returns {String}
+     */
+    convertReturns: function() {
+        if(!this.needReturns) return '';
+
+        return 'function returns(key, value) { ' +
+            'return typeof exports === "object" ? ' +
+                'module.exports[key] = value : ' +
+                'this[key] = value; ' +
+            '}\n';
     },
 
     /**
@@ -622,6 +669,10 @@ Maker.prototype = {
                 dependencies = info.dependencies;
 
             if(!this.isModuleExist(name)) {
+
+                if(modules[name].returns) {
+                    this.needReturns = true;
+                }
 
                 dependencies.forEach(function(dependency) {
                     this.addModule('push', dependency, modules[dependency]);

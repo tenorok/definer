@@ -236,6 +236,21 @@ var closure = {
             '(function(global, undefined) {\n' +
             'var a = (function () { return \'a\'; }).call(global);\n' +
             '})(this);';
+    },
+
+    getClosureStringReturnsModuleZ: function() {
+        return '(function(global, undefined) {\n' +
+            'function returns(key, value) { return typeof exports === "object" ? module.exports[key] = value : this[key] = value; }\n' +
+            'var z = (function () { return returns(\'nameZ\', \'valueZ\'); }).call(global);\n' +
+            '})(this);';
+    },
+
+    getClosureStringReturnsModuleY: function() {
+        return '(function(global, undefined) {\n' +
+            'function returns(key, value) { return typeof exports === "object" ? module.exports[key] = value : this[key] = value; }\n' +
+            'var z = (function () { return returns(\'nameZ\', \'valueZ\'); }).call(global),\n' +
+            'y = (function (z) { return \'z\'; }).call(global, z);\n' +
+            '})(this);';
     }
 
 };
