@@ -419,6 +419,10 @@ Maker.prototype = {
      */
     getModulesByDependencies: function(name, modules) {
 
+        if(!modules[name]) {
+            throw new ReferenceError('module ' + name + ' is not found');
+        }
+
         modules[name].dependencies.forEach(function(dependency) {
             this.modulesToModule[dependency] = modules[dependency];
             this.getModulesByDependencies(dependency, modules);
