@@ -10,7 +10,7 @@ describe('Тестирование функции экспорта.', function()
     var savePromise = vow.promise(),
         saveFilePath = path.join(__dirname, 'modules/all.js');
 
-    it('Сборка', function(done) {
+    it('Сборка одного модуля', function(done) {
 
         new Maker({
             directory: path.join(__dirname, 'modules2'),
@@ -20,6 +20,23 @@ describe('Тестирование функции экспорта.', function()
 
                 fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {
                     assert.equal(data, helper.getClosureStringReturnsModuleZ());
+                    savePromise.fulfill();
+                });
+
+                done();
+            }).done();
+    });
+
+    it('Сборка модуля из зависимости', function(done) {
+
+        new Maker({
+            directory: path.join(__dirname, 'modules2'),
+            module: 'y',
+            verbose: ['error']
+        }).make(saveFilePath).then(function() {
+
+                fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {
+                    assert.equal(data, helper.getClosureStringReturnsModuleY());
                     savePromise.fulfill();
                 });
 

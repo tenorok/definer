@@ -243,6 +243,14 @@ var closure = {
             'function returns(key, value) { return typeof exports === "object" ? module.exports[key] = value : this[key] = value; }\n' +
             'var z = (function () { return returns(\'nameZ\', \'valueZ\'); }).call(global);\n' +
             '})(this);';
+    },
+
+    getClosureStringReturnsModuleY: function() {
+        return '(function(global, undefined) {\n' +
+            'function returns(key, value) { return typeof exports === "object" ? module.exports[key] = value : this[key] = value; }\n' +
+            'var z = (function () { return returns(\'nameZ\', \'valueZ\'); }).call(global),\n' +
+            'y = (function (z) { return \'z\'; }).call(global, z);\n' +
+            '})(this);';
     }
 
 };
