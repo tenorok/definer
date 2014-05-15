@@ -45,6 +45,7 @@ describe('Тестирование метода getFileList.', function() {
                 'modules/sub/sub/a.js',
                 'modules/sub/sub/ef.js',
                 'modules/sub/sub/fake.js',
+                'modules2/w.js',
                 'modules2/x.js',
                 'modules2/y.js',
                 'modules2/z.js'
