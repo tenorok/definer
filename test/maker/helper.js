@@ -238,17 +238,21 @@ var closure = {
             '})(this);';
     },
 
-    getClosureStringReturnsModuleZ: function() {
+    getClosureStringExportModuleZ: function() {
         return '(function(global, undefined) {\n' +
-            'function returns(key, value) { return typeof exports === "object" ? module.exports[key] = value : this[key] = value; }\n' +
-            'var z = (function () { return returns(\'nameZ\', \'valueZ\'); }).call(global);\n' +
+            'var definer = {\n' +
+            'export: function(key, value) { return typeof exports === "object" ? module.exports[key] = value : global[key] = value; }\n' +
+            '};\n' +
+            'var z = definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global));\n' +
             '})(this);';
     },
 
-    getClosureStringReturnsModuleY: function() {
+    getClosureStringExportModuleY: function() {
         return '(function(global, undefined) {\n' +
-            'function returns(key, value) { return typeof exports === "object" ? module.exports[key] = value : this[key] = value; }\n' +
-            'var z = (function () { return returns(\'nameZ\', \'valueZ\'); }).call(global),\n' +
+            'var definer = {\n' +
+            'export: function(key, value) { return typeof exports === "object" ? module.exports[key] = value : global[key] = value; }\n' +
+            '};\n' +
+            'var z = definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
             'y = (function (z) { return \'z\'; }).call(global, z);\n' +
             '})(this);';
     }

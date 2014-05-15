@@ -19,7 +19,7 @@ describe('Тестирование функции экспорта.', function()
         }).make(saveFilePath).then(function() {
 
                 fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {
-                    assert.equal(data, helper.getClosureStringReturnsModuleZ());
+                    assert.equal(data, helper.getClosureStringExportModuleZ());
                     savePromise.fulfill();
                 });
 
@@ -36,7 +36,7 @@ describe('Тестирование функции экспорта.', function()
         }).make(saveFilePath).then(function() {
 
                 fs.readFile(saveFilePath, { encoding: 'UTF-8' }, function(err, data) {
-                    assert.equal(data, helper.getClosureStringReturnsModuleY());
+                    assert.equal(data, helper.getClosureStringExportModuleY());
                     savePromise.fulfill();
                 });
 
