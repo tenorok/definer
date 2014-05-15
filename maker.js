@@ -724,6 +724,19 @@ Maker.prototype = {
     },
 
     /**
+     * Добавить элемент в массив, если его там ещё нет
+     * @param {Array} array Массив
+     * @param {*} element Элемент
+     * @returns {Array}
+     */
+    pushOnce: function(array, element) {
+        if(!~array.indexOf(element)) {
+            array.push(element);
+        }
+        return array;
+    },
+
+    /**
      * Отсортировать полученный список всех модулей для сборки
      * @private
      * @param {Object} modules Список всех модулей
@@ -739,7 +752,7 @@ Maker.prototype = {
             if(!this.isModuleExist(name)) {
 
                 if(modules[name].export) {
-                    this.requireHelpers.push('export')
+                    this.pushOnce(this.requireHelpers, 'export');
                 }
 
                 dependencies.forEach(function(dependency) {
