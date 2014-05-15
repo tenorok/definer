@@ -66,11 +66,11 @@ function Maker(options) {
     this.saveFilePath = '';
 
     /**
-     * Флаг наличия вызовов функции экспорта
+     * Необходимые для модулей помощники
      * @private
-     * @type {boolean}
+     * @type {Array}
      */
-    this.needReturns = false;
+    this.requireHelpers = [];
 
     /**
      * Опции сборки
@@ -327,19 +327,13 @@ Maker.prototype = {
 
         var modules = {};
 
-        var definer = function(name, body) {
-            var returns = false;
-
-            this.eval('(' + body + ')()', {
-                returns: function() {
-                    returns = true;
-                }
-            }, { path: filePath, code: 'callback' });
+        var definer = function(name, body, data) {
+            data = data || {};
 
             modules[name] = {
                 dependencies: this.getArguments(body),
                 body: body,
-                returns: returns
+                export: data.export
             };
 
             this.console.log({ operation: 'read', path: filePath, description: name });
@@ -359,7 +353,11 @@ Maker.prototype = {
             }, this);
         }.bind(this);
 
-        this.eval(fileContent, { definer: definer }, { path: filePath, code: 'file' });
+        definer.export = function(name, body) {
+            definer.call(this, name, body, { export: true });
+        }.bind(this);
+
+        this.eval(fileContent, { definer: definer }, { path: filePath });
 
         return Object.keys(modules).length ? modules : null;
     },
@@ -375,7 +373,7 @@ Maker.prototype = {
         try {
             vm.runInNewContext(code, context);
         } catch(e) {
-            this.console.warn({ operation: 'skip', description: e, info: info });
+            this.console.warn({ operation: 'skip', description: e, path: info.path });
         }
     },
 
@@ -531,17 +529,17 @@ Maker.prototype = {
                 this.convertClean(),
                 this.jsdoc,
                 '(function(global, undefined) {\n',
-                this.convertReturns(),
+                this.convertHelpers(),
                 'var '
             ];
 
         this.modules.forEach(function(module, index) {
 
-            var method = this.isClean(module)
-                ? (cleaned.push(module.name), 'convertCleanModule')
-                : 'convertDefaultModule';
+            if(this.isClean(module)) {
+                cleaned.push(module.name);
+            }
 
-            closure = closure.concat(this[method](module));
+            closure = closure.concat(this.getModuleClosure(module));
 
             index + 1 < length
                 ? closure.push(',')
@@ -564,6 +562,25 @@ Maker.prototype = {
     },
 
     /**
+     * Сформировать строку для модуля
+     * @private
+     * @param {Object} module Информация о модуле
+     * @returns {Array}
+     */
+    getModuleClosure: function(module) {
+
+        if(this.isClean(module)) {
+            return this.convertCleanModule(module);
+        }
+
+        if(this.isExport(module)) {
+            return this.convertExportModule(module);
+        }
+
+        return this.convertDefaultModule(module);
+    },
+
+    /**
      * Сформировать строку содержимого файлов очищенных модулей
      * @private
      * @returns {String}
@@ -582,18 +599,33 @@ Maker.prototype = {
     },
 
     /**
-     * Сформировать строку функции экспорта
+     * Тела функций-помощников для собранного файла
+     * @private
+     * @type {Object}
+     */
+    helpers: {
+        export: 'function(key, value) { ' +
+            'return typeof exports === "object" ? module.exports[key] = value : global[key] = value;' +
+        ' }'
+    },
+
+    /**
+     * Сформировать строку помощников
      * @private
      * @returns {String}
      */
-    convertReturns: function() {
-        if(!this.needReturns) return '';
+    convertHelpers: function() {
+        if(!this.requireHelpers.length) return '';
 
-        return 'function returns(key, value) { ' +
-            'return typeof exports === "object" ? ' +
-                'module.exports[key] = value : ' +
-                'this[key] = value; ' +
-            '}\n';
+        var helpers = ['var definer = {'];
+
+        this.requireHelpers.forEach(function(name) {
+            helpers.push(name + ': ' + this.helpers[name]);
+        }, this);
+
+        helpers.push('};');
+
+        return helpers.join('\n') + '\n';
     },
 
     /**
@@ -635,6 +667,32 @@ Maker.prototype = {
     },
 
     /**
+     * Сформировать строку для модуля с экспортом данных
+     * @private
+     * @param {Object} module Информация о модуле
+     * @returns {Array}
+     */
+    convertExportModule: function(module) {
+
+        var closure = [
+            module.name,
+            ' = ',
+            'definer.export("' + module.name + '", ',
+            '(',
+            module.body,
+            ').call(global'
+        ];
+
+        if(module.deps.length) {
+            closure.push(', ', module.deps.join(', '));
+        }
+
+        closure.push('))');
+
+        return closure;
+    },
+
+    /**
      * Является ли модуль очищенным
      * @private
      * @param {Object} module Информация о модуле
@@ -642,6 +700,16 @@ Maker.prototype = {
      */
     isClean: function(module) {
         return !!module.clean;
+    },
+
+    /**
+     * Экспортирует ли модуль данные
+     * @private
+     * @param {Object} module Информация о модуле
+     * @returns {boolean}
+     */
+    isExport: function(module) {
+        return !!module.export;
     },
 
     /**
@@ -653,6 +721,19 @@ Maker.prototype = {
         return this.modules.filter(function(module) {
             return this.isClean(module);
         }, this);
+    },
+
+    /**
+     * Добавить элемент в массив, если его там ещё нет
+     * @param {Array} array Массив
+     * @param {*} element Элемент
+     * @returns {Array}
+     */
+    pushOnce: function(array, element) {
+        if(!~array.indexOf(element)) {
+            array.push(element);
+        }
+        return array;
     },
 
     /**
@@ -670,8 +751,8 @@ Maker.prototype = {
 
             if(!this.isModuleExist(name)) {
 
-                if(modules[name].returns) {
-                    this.needReturns = true;
+                if(modules[name].export) {
+                    this.pushOnce(this.requireHelpers, 'export');
                 }
 
                 dependencies.forEach(function(dependency) {
@@ -717,7 +798,8 @@ Maker.prototype = {
             name: name,
             deps: info.dependencies,
             body: info.body,
-            clean: info.clean
+            clean: info.clean,
+            export: info.export
         });
 
         this.sortedModuleNames.push(name);
