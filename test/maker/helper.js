@@ -255,6 +255,16 @@ var closure = {
             'var z = definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
             'y = (function (z) { return \'z\'; }).call(global, z);\n' +
             '})(this);';
+    },
+
+    getClosureStringExportModuleW: function() {
+        return '(function(global, undefined) {\n' +
+            'var definer = {\n' +
+            'export: function(key, value) { return typeof exports === "object" ? module.exports[key] = value : global[key] = value; }\n' +
+            '};\n' +
+            'var z = definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
+            'w = definer.export("w", (function (z) { return \'w\'; }).call(global, z));\n' +
+            '})(this);';
     }
 
 };
