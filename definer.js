@@ -41,6 +41,18 @@
         return this;
     };
 
+    /**
+     * Экспортировать результат модуля в зависимости от среды
+     * @param {String} name Имя модуля
+     * @param {*} value Результат выполнения тела модуля
+     * @returns {*}
+     */
+    Definer.export = function(name, value) {
+        return typeof exports === 'object'
+            ? module.exports[name] = value
+            : global[name] = value;
+    };
+
     Definer.prototype = {
 
         /**
@@ -131,6 +143,16 @@
      * @returns {Definer}
      */
     global.definer.clean = Definer.clean;
+
+    /**
+     * Экспортировать результат модуля в зависимости от среды
+     * @param {String} name Имя модуля
+     * @param {Function} body Тело модуля
+     * @returns {*}
+     */
+    global.definer.export = function(name, body) {
+        return Definer.export(name, new Definer(name, body).define());
+    };
 
     /**
      * Получить список всех объявленных модулей
