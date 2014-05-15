@@ -357,7 +357,7 @@ Maker.prototype = {
             definer.call(this, name, body, { export: true });
         }.bind(this);
 
-        this.eval(fileContent, { definer: definer }, { path: filePath, code: 'file' });
+        this.eval(fileContent, { definer: definer }, { path: filePath });
 
         return Object.keys(modules).length ? modules : null;
     },
@@ -373,7 +373,7 @@ Maker.prototype = {
         try {
             vm.runInNewContext(code, context);
         } catch(e) {
-            this.console.warn({ operation: 'skip', description: e, info: info });
+            this.console.warn({ operation: 'skip', description: e, path: info.path });
         }
     },
 
