@@ -195,7 +195,7 @@ var closure = {
 
     getClosureStringMakeCleanFiles: function() {
         return '(function(undefined) {\n' +
-            'var exports = modules = define = undefined;\n' +
+            'var exports = undefined, modules = undefined, define = undefined;\n' +
             '(function(global) { global._ = \'underscore\'; })(this);\n' +
             '(function(global) { global.$ = \'jquery\'; })(this);\n' +
             '(function(global) { global.$.ui = \'jquery.ui\'; })(this);\n' +
@@ -213,7 +213,7 @@ var closure = {
 
     getClosureStringMakeCleanFilesModuleC: function() {
         return '(function(undefined) {\n' +
-            'var exports = modules = define = undefined;\n' +
+            'var exports = undefined, modules = undefined, define = undefined;\n' +
             '(function(global) { global.$ = \'jquery\'; })(this);\n' +
             '(function(global) { global.$.ui = \'jquery.ui\'; })(this);\n' +
             '(function(global) { global.$.plugin = \'jquery.plugin\'; })(this);\n' +
