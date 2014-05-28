@@ -590,7 +590,7 @@ Maker.prototype = {
 
         this.clean.unshift(
             '(function(undefined) {',
-            'var exports = modules = define = undefined;'
+            'var exports = undefined, modules = undefined, define = undefined;'
         );
 
         this.clean.push('}).call(this);');
