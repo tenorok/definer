@@ -198,8 +198,8 @@ var closure = {
             'var exports = undefined, modules = undefined, define = undefined;\n' +
             '(function(global) { global._ = \'underscore\'; })(this);\n' +
             '(function(global) { global.$ = \'jquery\'; })(this);\n' +
-            '(function(global) { global.$.ui = \'jquery.ui\'; })(this);\n' +
-            '(function(global) { global.$.plugin = \'jquery.plugin\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).ui = \'jquery.ui\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).plugin = \'jquery.plugin\'; })(this);\n' +
             '}).call(this);\n' +
             '(function(global, undefined) {\n' +
             'var _ = global._,\n' +
@@ -215,8 +215,8 @@ var closure = {
         return '(function(undefined) {\n' +
             'var exports = undefined, modules = undefined, define = undefined;\n' +
             '(function(global) { global.$ = \'jquery\'; })(this);\n' +
-            '(function(global) { global.$.ui = \'jquery.ui\'; })(this);\n' +
-            '(function(global) { global.$.plugin = \'jquery.plugin\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).ui = \'jquery.ui\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).plugin = \'jquery.plugin\'; })(this);\n' +
             '}).call(this);\n' +
             '(function(global, undefined) {\n' +
             'var $ = global.$,\n' +
@@ -264,6 +264,45 @@ var closure = {
             '};\n' +
             'var z = definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
             'w = definer.export("w", (function (z) { return \'w\'; }).call(global, z));\n' +
+            '})(this);';
+    },
+
+    getClosureStringIstanbul: function() {
+        return '(function(global, undefined) {\n' +
+            'var a = /* istanbul ignore next */(function () { return \'a\'; }).call(global),\n' +
+            'b = /* istanbul ignore next */(function (a){return a + \'b\';}).call(global, a),\n' +
+            'c = /* istanbul ignore next */(function (a, b) {\n' +
+            '    return a + b + \'c\';\n' +
+            '}).call(global, a, b),\n' +
+            'd = (function (\n' +
+            '        a,\n' +
+            '        b,\n' +
+            '        c\n' +
+            '    ){\n' +
+            '        return a + b + \'c\';\n' +
+            '    }).call(global, a, b, c),\n' +
+            'e = (function (d) { return d + \'e\'; }).call(global, d),\n' +
+            'f = (function () { return \'f\'; }).call(global);\n' +
+            '})(this);';
+    },
+
+    getClosureStringModuleCIstanbul: function() {
+        return '(function(global, undefined) {\n' +
+            'var a = /* istanbul ignore next */(function () { return \'a\'; }).call(global),\n' +
+            'b = (function (a){return a + \'b\';}).call(global, a),\n' +
+            'c = (function (a, b) {\n' +
+            '    return a + b + \'c\';\n' +
+            '}).call(global, a, b);\n' +
+            '})(this);';
+    },
+
+    getClosureStringExportModuleYIstanbul: function() {
+        return '(function(global, undefined) {\n' +
+            'var definer = {\n' +
+            'export: function(key, value) { return typeof exports === "object" ? module.exports[key] = value : global[key] = value; }\n' +
+            '};\n' +
+            'var z = /* istanbul ignore next */definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
+            'y = (function (z) { return \'z\'; }).call(global, z);\n' +
             '})(this);';
     }
 
