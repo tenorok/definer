@@ -265,6 +265,35 @@ var closure = {
             'var z = definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
             'w = definer.export("w", (function (z) { return \'w\'; }).call(global, z));\n' +
             '})(this);';
+    },
+
+    getClosureStringIstanbul: function() {
+        return '(function(global, undefined) {\n' +
+            'var a = /* istanbul ignore next */(function () { return \'a\'; }).call(global),\n' +
+            'b = /* istanbul ignore next */(function (a){return a + \'b\';}).call(global, a),\n' +
+            'c = /* istanbul ignore next */(function (a, b) {\n' +
+            '    return a + b + \'c\';\n' +
+            '}).call(global, a, b),\n' +
+            'd = (function (\n' +
+            '        a,\n' +
+            '        b,\n' +
+            '        c\n' +
+            '    ){\n' +
+            '        return a + b + \'c\';\n' +
+            '    }).call(global, a, b, c),\n' +
+            'e = (function (d) { return d + \'e\'; }).call(global, d),\n' +
+            'f = (function () { return \'f\'; }).call(global);\n' +
+            '})(this);';
+    },
+
+    getClosureStringExportModuleYIstanbul: function() {
+        return '(function(global, undefined) {\n' +
+            'var definer = {\n' +
+            'export: function(key, value) { return typeof exports === "object" ? module.exports[key] = value : global[key] = value; }\n' +
+            '};\n' +
+            'var z = /* istanbul ignore next */definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
+            'y = (function (z) { return \'z\'; }).call(global, z);\n' +
+            '})(this);';
     }
 
 };
