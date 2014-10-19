@@ -198,8 +198,8 @@ var closure = {
             'var exports = undefined, modules = undefined, define = undefined;\n' +
             '(function(global) { global._ = \'underscore\'; })(this);\n' +
             '(function(global) { global.$ = \'jquery\'; })(this);\n' +
-            '(function(global) { global.$.ui = \'jquery.ui\'; })(this);\n' +
-            '(function(global) { global.$.plugin = \'jquery.plugin\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).ui = \'jquery.ui\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).plugin = \'jquery.plugin\'; })(this);\n' +
             '}).call(this);\n' +
             '(function(global, undefined) {\n' +
             'var _ = global._,\n' +
@@ -215,8 +215,8 @@ var closure = {
         return '(function(undefined) {\n' +
             'var exports = undefined, modules = undefined, define = undefined;\n' +
             '(function(global) { global.$ = \'jquery\'; })(this);\n' +
-            '(function(global) { global.$.ui = \'jquery.ui\'; })(this);\n' +
-            '(function(global) { global.$.plugin = \'jquery.plugin\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).ui = \'jquery.ui\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).plugin = \'jquery.plugin\'; })(this);\n' +
             '}).call(this);\n' +
             '(function(global, undefined) {\n' +
             'var $ = global.$,\n' +

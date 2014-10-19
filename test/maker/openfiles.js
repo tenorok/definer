@@ -22,8 +22,8 @@ describe('Тестирование метода openFiles.', function() {
     it('Проверка результирующего массива содержимого файлов', function(done) {
 
         var standardResult = "(function(global) { global.$ = 'jquery'; })(this);" +
-            "(function(global) { global.$.ui = 'jquery.ui'; })(this);" +
-            "(function(global) { global.$.plugin = 'jquery.plugin'; })(this);" +
+            "(function(global) { (global.$ || {}).ui = 'jquery.ui'; })(this);" +
+            "(function(global) { (global.$ || {}).plugin = 'jquery.plugin'; })(this);" +
             "(function(global) { global._ = 'underscore'; })(this);";
 
         new Maker({

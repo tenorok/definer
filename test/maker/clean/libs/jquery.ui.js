@@ -1,1 +1,1 @@
-(function(global) { global.$.ui = 'jquery.ui'; })(this);
+(function(global) { (global.$ || {}).ui = 'jquery.ui'; })(this);
