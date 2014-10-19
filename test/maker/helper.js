@@ -286,6 +286,16 @@ var closure = {
             '})(this);';
     },
 
+    getClosureStringModuleCIstanbul: function() {
+        return '(function(global, undefined) {\n' +
+            'var a = /* istanbul ignore next */(function () { return \'a\'; }).call(global),\n' +
+            'b = (function (a){return a + \'b\';}).call(global, a),\n' +
+            'c = (function (a, b) {\n' +
+            '    return a + b + \'c\';\n' +
+            '}).call(global, a, b);\n' +
+            '})(this);';
+    },
+
     getClosureStringExportModuleYIstanbul: function() {
         return '(function(global, undefined) {\n' +
             'var definer = {\n' +
