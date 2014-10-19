@@ -14,6 +14,7 @@ commander
     .usage('[options] <file>')
     .option('-d, --directory <path1,path2>', 'directory of modules, comma delimited', '.')
     .option('-m, --module <name>', 'target module name')
+    .option('-i, --istanbul <name>', 'target module name to coverage by istanbul')
     .option('-p, --postfix <postfix>', 'postfix to find files')
     .option('-v, --verbose <modes>', 'l - log, i - info, w - warn, e - error', function(modes) { return modes.split(''); })
     .option('-c, --config <file>', 'json format config', defaultConfigFile)
@@ -33,6 +34,7 @@ function Cli(filePath, options) {
     this.options = _.extend(this.getConfig(options.config), this.cleanObject({
         directory: this.getAbsolutePath(options.directory.split(',')),
         module: options.module,
+        istanbul: options.istanbul,
         postfix: options.postfix,
         verbose: verbose
     }));
@@ -193,6 +195,7 @@ Cli.prototype = {
         new Maker({
             directory: this.options.directory,
             module: this.options.module,
+            istanbul: this.options.istanbul,
             postfix: this.options.postfix,
             verbose: this.options.verbose,
             clean: this.options.clean,
@@ -213,6 +216,7 @@ module.exports.run = function() {
     new Cli(commander.args[0], {
         directory: commander.directory,
         module: commander.module,
+        istanbul: commander.istanbul,
         postfix: commander.postfix,
         verbose: commander.verbose,
         config: commander.config
