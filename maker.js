@@ -77,6 +77,7 @@ function Maker(options) {
      * @type {{
      * directory: String|String[],
      * module: String|boolean,
+     * istanbul: String|boolean,
      * postfix: String,
      * verbose: Array,
      * clean: Object,
@@ -86,6 +87,7 @@ function Maker(options) {
     this.options = _.defaults(options || {}, {
         directory: '.',
         module: false,
+        istanbul: false,
         postfix: 'js',
         verbose: [],
         clean: {},
@@ -465,7 +467,7 @@ Maker.prototype = {
             method = this.options.module ? 'getModuleListToModule' : 'getModuleList';
 
         this[method]().then(function(modules) {
-            promise.fulfill(this.sortModules(modules));
+            promise.fulfill(this.markIstanbul(this.sortModules(modules)));
         }.bind(this)).done();
 
         return promise;
@@ -638,7 +640,9 @@ Maker.prototype = {
 
         var closure = [
                 module.name,
-                ' = (',
+                ' = ',
+                module.istanbul === false ? '/* istanbul ignore next */' : '',
+                '(',
                 module.body,
                 ').call(global'
             ];
@@ -677,6 +681,7 @@ Maker.prototype = {
         var closure = [
             module.name,
             ' = ',
+            module.istanbul === false ? '/* istanbul ignore next */' : '',
             'definer.export("' + module.name + '", ',
             '(',
             module.body,
@@ -782,6 +787,8 @@ Maker.prototype = {
      * @param {Object} info Информация о модуле
      * @param {String[]} info.dependencies Зависимости модуля
      * @param {Function} info.body Тело модуля
+     * @param {boolean} [info.clean] Флаг очищающего модуля
+     * @param {boolean} [info.export] Флаг модуля с экспортом
      */
     addModule: function(method, name, info) {
         if(this.isModuleExist(name)) return;
@@ -865,6 +872,30 @@ Maker.prototype = {
     moveBeforeIndex: function(moduleIndex, dependencyIndex) {
         this.modules.splice(moduleIndex, 0, this.modules[dependencyIndex]); // Скопировать на новое место
         this.modules.splice(dependencyIndex + 1, 1); // Удалить с прошлого места
+    },
+
+    /**
+     * Пометить модули для оценки покрытия тестами.
+     * Игнорируемые модули помечаются полем `istanbul=false`,
+     * а модуль для оценки помечается полем `istanbul=true`.
+     * @private
+     * @param {Object} modules Отсортированные модули
+     * @returns {Object}
+     */
+    markIstanbul: function(modules) {
+        var moduleToCoverage = this.options.istanbul;
+        if(!moduleToCoverage) return modules;
+
+        for(var i = 0; i < modules.length; i++) {
+            if(modules[i].name !== moduleToCoverage) {
+                modules[i].istanbul = false;
+            } else {
+                modules[i].istanbul = true;
+                break;
+            }
+        }
+
+        return modules;
     },
 
     /**
