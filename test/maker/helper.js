@@ -281,7 +281,7 @@ var closure = {
             '    ){\n' +
             '        return a + b + \'c\';\n' +
             '    }).call(global, a, b, c),\n' +
-            'e = (function (d) { return d + \'e\'; }).call(global, d),\n' +
+            'e = /* istanbul ignore next */(function (d) { return d + \'e\'; }).call(global, d),\n' +
             'f = (function () { return \'f\'; }).call(global);\n' +
             '})(this);';
     },
@@ -290,7 +290,7 @@ var closure = {
         return '(function(global, undefined) {\n' +
             'var a = /* istanbul ignore next */(function () { return \'a\'; }).call(global),\n' +
             'b = (function (a){return a + \'b\';}).call(global, a),\n' +
-            'c = (function (a, b) {\n' +
+            'c = /* istanbul ignore next */(function (a, b) {\n' +
             '    return a + b + \'c\';\n' +
             '}).call(global, a, b);\n' +
             '})(this);';
@@ -304,7 +304,21 @@ var closure = {
             'var z = /* istanbul ignore next */definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
             'y = (function (z) { return \'z\'; }).call(global, z);\n' +
             '})(this);';
-    }
+    },
+
+    getClosureStringMakeCleanFilesModuleCIstanbul: function() {
+        return '/* istanbul ignore next */(function(undefined) {\n' +
+            'var exports = undefined, modules = undefined, define = undefined;\n' +
+            '(function(global) { global.$ = \'jquery\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).ui = \'jquery.ui\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).plugin = \'jquery.plugin\'; })(this);\n' +
+            '}).call(this);\n' +
+            '(function(global, undefined) {\n' +
+            'var $ = global.$,\n' +
+            'c = (function ($) { return \'c\'; }).call(global, $);\n' +
+            '["$"].forEach(function(g) { delete global[g]; });\n' +
+            '})(this);';
+    },
 
 };
 

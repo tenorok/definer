@@ -12,11 +12,13 @@ const path = require('path'),
 commander
     .version('0.0.4')
     .usage('[options] <file>')
-    .option('-d, --directory <path1,path2>', 'directory of modules, comma delimited', '.')
+    .option('-d, --directory <path1,pathN>', 'directory of modules, comma delimited', '.')
     .option('-m, --module <name>', 'target module name')
-    .option('-i, --istanbul <name>', 'target module name to coverage by istanbul')
+    .option('-i, --istanbul <name1,nameN>', 'names of modules to coverage by istanbul, comma delimited',
+        function(modules) { return modules.split(','); })
     .option('-p, --postfix <postfix>', 'postfix to find files')
-    .option('-v, --verbose <modes>', 'l - log, i - info, w - warn, e - error', function(modes) { return modes.split(''); })
+    .option('-v, --verbose <modes>', 'l - log, i - info, w - warn, e - error',
+        function(modes) { return modes.split(''); })
     .option('-c, --config <file>', 'json format config', defaultConfigFile)
     .parse(process.argv);
 
