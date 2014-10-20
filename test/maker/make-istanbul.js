@@ -12,11 +12,11 @@ describe('Сборка модулей для тестирования покры
         var savePromise = vow.promise(),
             saveFilePath = path.join(__dirname, 'modules/all.js');
 
-        it('Все обычные модули', function(done) {
+        it('Все обычные модули и несколько целевых модулей для istanbul', function(done) {
 
             new Maker({
                 directory: path.join(__dirname, 'modules'),
-                istanbul: 'd',
+                istanbul: ['d', 'f'],
                 verbose: ['error']
             }).make(saveFilePath).then(function() {
 
@@ -29,7 +29,7 @@ describe('Сборка модулей для тестирования покры
                 }).done();
         });
 
-        it('Заданный модуль', function(done) {
+        it('Заданный модуль для сборки с одним целевым модулем для istanbul', function(done) {
 
             new Maker({
                 directory: path.join(__dirname, 'modules'),
@@ -47,7 +47,7 @@ describe('Сборка модулей для тестирования покры
                 }).done();
         });
 
-        it('Заданные модуль с присутствием экспортируемых модулей', function(done) {
+        it('Заданный модуль с присутствием экспортируемых модулей', function(done) {
 
             new Maker({
                 directory: path.join(__dirname, 'modules2'),

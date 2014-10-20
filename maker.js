@@ -77,7 +77,7 @@ function Maker(options) {
      * @type {{
      * directory: String|String[],
      * module: String|boolean,
-     * istanbul: String|boolean,
+     * istanbul: String|String[]|boolean,
      * postfix: String,
      * verbose: Array,
      * clean: Object,
@@ -883,15 +883,16 @@ Maker.prototype = {
      * @returns {Object}
      */
     markIstanbul: function(modules) {
-        var moduleToCoverage = this.options.istanbul;
-        if(!moduleToCoverage) return modules;
+        var modulesToCoverage = this.options.istanbul;
+        if(!modulesToCoverage) return modules;
+
+        if(typeof modulesToCoverage === 'string') {
+            modulesToCoverage = [modulesToCoverage];
+        }
 
         for(var i = 0; i < modules.length; i++) {
-            if(modules[i].name !== moduleToCoverage) {
+            if(!~modulesToCoverage.indexOf(modules[i].name)) {
                 modules[i].istanbul = false;
-            } else {
-                modules[i].istanbul = true;
-                break;
             }
         }
 
