@@ -77,8 +77,8 @@ describe('Сборка модулей для тестирования покры
 
         var cli = new helper.testCLI('./bin/definer -v e -d test/maker/modules/').setTarget('test/maker/modules/all.js');
 
-        it('Все обычные модули', function(done) {
-            cli.exec('-i d', helper.getClosureStringIstanbul(), done);
+        it('Все обычные модули и несколько целевых модулей для istanbul', function(done) {
+            cli.exec('-i d,f', helper.getClosureStringIstanbul(), done);
         });
 
         after(function(done) {
