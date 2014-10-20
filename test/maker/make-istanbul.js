@@ -75,10 +75,15 @@ describe('Сборка модулей для тестирования покры
 
     describe('CLI.', function() {
 
-        var cli = new helper.testCLI('./bin/definer -v e -d test/maker/modules/').setTarget('test/maker/modules/all.js');
+        var cli = new helper.testCLI('./bin/definer -v e').setTarget('test/maker/modules/all.js');
 
         it('Все обычные модули и несколько целевых модулей для istanbul', function(done) {
-            cli.exec('-i d,f', helper.getClosureStringIstanbul(), done);
+            cli.exec('-d test/maker/modules/ -i d,f', helper.getClosureStringIstanbul(), done);
+        });
+
+        it('Clean-скрипты так же должны предваряться istanbul-комментарием', function(done) {
+            cli.exec('-d test/maker/clean/ -c test/maker/clean/clean.json -i c -m c',
+                helper.getClosureStringMakeCleanFilesModuleCIstanbul(), done);
         });
 
         after(function(done) {

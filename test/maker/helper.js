@@ -304,7 +304,21 @@ var closure = {
             'var z = /* istanbul ignore next */definer.export("z", (function () { return { nameZ: \'valueZ\' }; }).call(global)),\n' +
             'y = (function (z) { return \'z\'; }).call(global, z);\n' +
             '})(this);';
-    }
+    },
+
+    getClosureStringMakeCleanFilesModuleCIstanbul: function() {
+        return '/* istanbul ignore next */(function(undefined) {\n' +
+            'var exports = undefined, modules = undefined, define = undefined;\n' +
+            '(function(global) { global.$ = \'jquery\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).ui = \'jquery.ui\'; })(this);\n' +
+            '(function(global) { (global.$ || {}).plugin = \'jquery.plugin\'; })(this);\n' +
+            '}).call(this);\n' +
+            '(function(global, undefined) {\n' +
+            'var $ = global.$,\n' +
+            'c = (function ($) { return \'c\'; }).call(global, $);\n' +
+            '["$"].forEach(function(g) { delete global[g]; });\n' +
+            '})(this);';
+    },
 
 };
 

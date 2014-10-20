@@ -109,6 +109,14 @@ function Maker(options) {
  */
 Maker.cacheFiles = {};
 
+/**
+ * Комментарий для указания istanbul игнорировать блоки кода
+ * @private
+ * @constant
+ * @type {String}
+ */
+Maker.ISTANBUL_COMMENT = '/* istanbul ignore next */';
+
 Maker.prototype = {
 
     /**
@@ -591,6 +599,7 @@ Maker.prototype = {
         if(!this.clean.length) return '';
 
         this.clean.unshift(
+            (this.options.istanbul !== false ? Maker.ISTANBUL_COMMENT : '') +
             '(function(undefined) {',
             'var exports = undefined, modules = undefined, define = undefined;'
         );
@@ -641,7 +650,7 @@ Maker.prototype = {
         var closure = [
                 module.name,
                 ' = ',
-                module.istanbul === false ? '/* istanbul ignore next */' : '',
+                module.istanbul === false ? Maker.ISTANBUL_COMMENT : '',
                 '(',
                 module.body,
                 ').call(global'
