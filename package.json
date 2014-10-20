@@ -24,7 +24,7 @@
     "devDependencies": {
         "mocha": "~1.15.1",
         "chai": "~1.8.1",
-        "jsdoc": "~3.3.0"
+        "jsdoc": "3.3.0-alpha8"
     },
     "main": "main.js",
     "bin": {
