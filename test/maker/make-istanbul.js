@@ -12,11 +12,11 @@ describe('Сборка модулей для тестирования покры
         var savePromise = vow.promise(),
             saveFilePath = path.join(__dirname, 'modules/all.js');
 
-        it('Все обычные модули', function(done) {
+        it('Все обычные модули и несколько целевых модулей для istanbul', function(done) {
 
             new Maker({
                 directory: path.join(__dirname, 'modules'),
-                istanbul: 'd',
+                istanbul: ['d', 'f'],
                 verbose: ['error']
             }).make(saveFilePath).then(function() {
 
@@ -29,7 +29,7 @@ describe('Сборка модулей для тестирования покры
                 }).done();
         });
 
-        it('Заданный модуль', function(done) {
+        it('Заданный модуль для сборки с одним целевым модулем для istanbul', function(done) {
 
             new Maker({
                 directory: path.join(__dirname, 'modules'),
@@ -47,7 +47,7 @@ describe('Сборка модулей для тестирования покры
                 }).done();
         });
 
-        it('Заданные модуль с присутствием экспортируемых модулей', function(done) {
+        it('Заданный модуль с присутствием экспортируемых модулей', function(done) {
 
             new Maker({
                 directory: path.join(__dirname, 'modules2'),
@@ -75,10 +75,15 @@ describe('Сборка модулей для тестирования покры
 
     describe('CLI.', function() {
 
-        var cli = new helper.testCLI('./bin/definer -v e -d test/maker/modules/').setTarget('test/maker/modules/all.js');
+        var cli = new helper.testCLI('./bin/definer -v e').setTarget('test/maker/modules/all.js');
 
-        it('Все обычные модули', function(done) {
-            cli.exec('-i d', helper.getClosureStringIstanbul(), done);
+        it('Все обычные модули и несколько целевых модулей для istanbul', function(done) {
+            cli.exec('-d test/maker/modules/ -i d,f', helper.getClosureStringIstanbul(), done);
+        });
+
+        it('Clean-скрипты так же должны предваряться istanbul-комментарием', function(done) {
+            cli.exec('-d test/maker/clean/ -c test/maker/clean/clean.json -i c -m c',
+                helper.getClosureStringMakeCleanFilesModuleCIstanbul(), done);
         });
 
         after(function(done) {

@@ -77,7 +77,7 @@ function Maker(options) {
      * @type {{
      * directory: String|String[],
      * module: String|boolean,
-     * istanbul: String|boolean,
+     * istanbul: String|String[]|boolean,
      * postfix: String,
      * verbose: Array,
      * clean: Object,
@@ -108,6 +108,14 @@ function Maker(options) {
  * @type {Object}
  */
 Maker.cacheFiles = {};
+
+/**
+ * Комментарий для указания istanbul игнорировать блоки кода
+ * @private
+ * @constant
+ * @type {String}
+ */
+Maker.ISTANBUL_COMMENT = '/* istanbul ignore next */';
 
 Maker.prototype = {
 
@@ -591,6 +599,7 @@ Maker.prototype = {
         if(!this.clean.length) return '';
 
         this.clean.unshift(
+            (this.options.istanbul !== false ? Maker.ISTANBUL_COMMENT : '') +
             '(function(undefined) {',
             'var exports = undefined, modules = undefined, define = undefined;'
         );
@@ -641,7 +650,7 @@ Maker.prototype = {
         var closure = [
                 module.name,
                 ' = ',
-                module.istanbul === false ? '/* istanbul ignore next */' : '',
+                module.istanbul === false ? Maker.ISTANBUL_COMMENT : '',
                 '(',
                 module.body,
                 ').call(global'
@@ -883,15 +892,16 @@ Maker.prototype = {
      * @returns {Object}
      */
     markIstanbul: function(modules) {
-        var moduleToCoverage = this.options.istanbul;
-        if(!moduleToCoverage) return modules;
+        var modulesToCoverage = this.options.istanbul;
+        if(!modulesToCoverage) return modules;
+
+        if(typeof modulesToCoverage === 'string') {
+            modulesToCoverage = [modulesToCoverage];
+        }
 
         for(var i = 0; i < modules.length; i++) {
-            if(modules[i].name !== moduleToCoverage) {
+            if(!~modulesToCoverage.indexOf(modules[i].name)) {
                 modules[i].istanbul = false;
-            } else {
-                modules[i].istanbul = true;
-                break;
             }
         }
 
